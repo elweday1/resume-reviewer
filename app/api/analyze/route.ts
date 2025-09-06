@@ -36,7 +36,7 @@ Ensure the resume does not include: a picture, age, gender, slang, or a list of 
 `
 
 async function analyzeFile(pdfBase64: string): Promise<ResumeAnalysis> {
-  const { object: analysisData } = await generateObject({
+  const { object } = await generateObject({
     model: google(MODEL_NAME),
     messages: [
       {
@@ -61,8 +61,23 @@ async function analyzeFile(pdfBase64: string): Promise<ResumeAnalysis> {
     schema: ResumeAnalysisSchema,
     temperature: 0.3,
   })
+  return object
+}
 
-  return analysisData
+async function uploadFile({ analysisData, filename, fileUrl }: { filename: string, analysisData: ResumeAnalysis, fileUrl: string }) {
+  const supabase = createClient()
+
+  const { data: savedAnalysis, error: dbError } = await supabase
+    .from("analyses")
+    .insert({
+      pdf_url: fileUrl,
+      pdf_filename: filename || "resume.pdf",
+      analysis_data: analysisData,
+    })
+    .select("id, share_token")
+    .single()
+
+  return { savedAnalysis, dbError }
 }
 
 export async function POST(request: NextRequest) {
@@ -83,20 +98,8 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = await pdfResponse.arrayBuffer()
     const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
     const analysisData = await analyzeFile(pdfBase64)
-
     console.log("[v0] PDF analysis completed successfully with score:", analysisData.score)
-
-    const supabase = createClient()
-
-    const { data: savedAnalysis, error: dbError } = await supabase
-      .from("analyses")
-      .insert({
-        pdf_url: fileUrl,
-        pdf_filename: filename || "resume.pdf",
-        analysis_data: analysisData,
-      })
-      .select("id, share_token")
-      .single()
+    const { savedAnalysis, dbError } = await uploadFile({ filename, analysisData, fileUrl })
 
     if (dbError) {
       console.error("[v0] Database error:", dbError)

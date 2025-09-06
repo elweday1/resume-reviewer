@@ -1,16 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Loader2, AlertCircle, Share2 } from "lucide-react"
+import { ArrowLeft, Loader2, AlertCircle, Share2, UserSquare } from "lucide-react"
 import type { ResumeAnalysis } from "@/lib/schemas"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { ErrorBoundary } from "@/components/error-boundary"
-
-const USE_MOCK_DATA = true
 
 const MOCK_ANALYSIS: ResumeAnalysis = {
   score: 85,
@@ -89,8 +87,8 @@ interface UploadedFile {
   blobUrl: string
 }
 
-async function getAnalysis(file: UploadedFile): Promise<{ analysis: ResumeAnalysis, shareToken: string | null }> {
-  if (USE_MOCK_DATA) {
+async function getAnalysis({ file, mocked }: { file: UploadedFile, mocked: boolean }): Promise<{ analysis: ResumeAnalysis, shareToken: string | null }> {
+  if (mocked) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({ analysis: MOCK_ANALYSIS, shareToken: "mock-share-token" })
@@ -125,6 +123,7 @@ export default function AnalysisPage() {
   const [error, setError] = useState<string | null>(null)
   const [shareToken, setShareToken] = useState<string | null>(null)
   const router = useRouter()
+  const params = useSearchParams()
 
   useEffect(() => {
     const analyzeResume = async () => {
@@ -140,7 +139,8 @@ export default function AnalysisPage() {
 
       try {
         console.log("[v0] Starting PDF analysis with Gemini...")
-        const data = await getAnalysis(file)
+        const isMocked = params.get("mocked") === "true"
+        const data = await getAnalysis({ file, mocked: false })
         setAnalysis(data.analysis)
         setShareToken(data.shareToken)
 

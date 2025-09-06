@@ -41,16 +41,14 @@ export async function POST(request: NextRequest) {
     const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
 
     const { object: analysisData } = await generateObject({
-      model: google("gemini-1.5-flash"),
-      prompt: ANALYSIS_PROMPT,
+      model: google("gemini-2.0-flash"),
       messages: [
         {
-          role: "system",
+          role: "system" as const,
           content: ANALYSIS_PROMPT
-
         },
         {
-          role: "user",
+          role: "user" as const,
           content: [
             {
               type: "text",
@@ -59,7 +57,7 @@ export async function POST(request: NextRequest) {
             {
               type: "file",
               data: pdfBase64,
-              mimeType: "application/pdf",
+              mediaType: "application/pdf",
             },
           ],
         },

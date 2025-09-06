@@ -156,12 +156,12 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <QualityPillarsCard pillars={analysis.qualityPillarsAnalysis || []} />
-        <SectionPerformanceCard sections={analysis.sectionAnalysis || []} />
+        {/* <QualityPillarsCard pillars={analysis.qualityPillarsAnalysis || []} />
+        <SectionPerformanceCard sections={analysis.sectionAnalysis || []} /> */}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} />
+        {/* <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} /> */}
 
         <Card className="col-span-2">
           <CardHeader>

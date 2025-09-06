@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Loader2, AlertCircle, Share2, UserSquare } from "lucide-react"
+import { ArrowLeft, Loader2, AlertCircle, Share2 } from "lucide-react"
 import type { ResumeAnalysis } from "@/lib/schemas"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
@@ -79,6 +79,7 @@ const MOCK_ANALYSIS: ResumeAnalysis = {
     ],
   },
 }
+
 interface UploadedFile {
   url: string
   filename: string
@@ -116,17 +117,17 @@ async function getAnalysis({ file, mocked }: { file: UploadedFile, mocked: boole
   return data
 }
 
-export default function AnalysisPage() {
+export default function AnalysisPageClient() {
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(true)
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [shareToken, setShareToken] = useState<string | null>(null)
   const router = useRouter()
+  const params = useSearchParams()
 
   useEffect(() => {
     const analyzeResume = async () => {
-      // Get uploaded file info from sessionStorage
       const storedFile = sessionStorage.getItem("uploadedResume")
       if (!storedFile) {
         router.push("/upload")
@@ -138,7 +139,7 @@ export default function AnalysisPage() {
 
       try {
         console.log("[v0] Starting PDF analysis with Gemini...")
-        const isMocked = new URLSearchParams(window.location.search).get("mocked") === "true"
+        const isMocked = params.get("mocked") === "true"
         const data = await getAnalysis({ file, mocked: isMocked })
         setAnalysis(data.analysis)
         setShareToken(data.shareToken)
@@ -157,7 +158,7 @@ export default function AnalysisPage() {
     }
 
     analyzeResume()
-  }, [router])
+  }, [router, params])
 
   const handleShare = async () => {
     if (!shareToken) return
@@ -172,18 +173,15 @@ export default function AnalysisPage() {
           url: shareUrl,
         })
       } catch (err) {
-        // User cancelled sharing, fallback to clipboard
         await navigator.clipboard.writeText(shareUrl)
       }
     } else {
       await navigator.clipboard.writeText(shareUrl)
-      // Add toast notification for clipboard copy
     }
   }
 
   const handleSectionClick = (pageNumber: number, coordinates: { x: number; y: number }) => {
     console.log(`[v0] PDF section clicked - Page: ${pageNumber}, Coordinates:`, coordinates)
-    // Implement section highlighting and reference functionality
   }
 
   if (!uploadedFile) {

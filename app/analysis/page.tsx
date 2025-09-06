@@ -90,7 +90,7 @@ interface UploadedFile {
 }
 
 async function getAnalysis(file: UploadedFile): Promise<{ analysis: ResumeAnalysis, shareToken: string | null }> {
-  if (!USE_MOCK_DATA) {
+  if (USE_MOCK_DATA) {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({ analysis: MOCK_ANALYSIS, shareToken: "mock-share-token" })

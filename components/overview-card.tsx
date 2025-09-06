@@ -5,8 +5,9 @@ import { Target } from 'lucide-react'
 import { ScoreCard } from './score-card'
 import { Progress } from '@/components/ui/progress'
 import { useUiStore } from '@/lib/stores/ui'
+import { ResumeAnalysis } from '@/lib/schemas'
 
-export function OverviewCard({ analysis }: { analysis: any }) {
+export function OverviewCard({ analysis }: { analysis: ResumeAnalysis }) {
     const showRecruiter = useUiStore((s) => s.recruiterExpanded)
     const toggleRecruiter = useUiStore((s) => s.toggleRecruiter)
 

@@ -116,7 +116,7 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
       if (section && issue.sectionName !== section) return false
       return true
     })
-  }, [analysis])
+  }, [analysis, pillar, severity, section])
 
 
   if (!analysis) {
@@ -148,7 +148,7 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
         {activeSeverityFilter && (
           <Badge className="flex items-center gap-2">
             {activeSeverityFilter}
-            <button onClick={() => setActivePillarFilter(null)} className="ml-2 text-xs">×</button>
+            <button onClick={() => setActiveSeverityFilter(null)} className="ml-2 text-xs">×</button>
           </Badge>
         )}
         {activeSectionFilter && (

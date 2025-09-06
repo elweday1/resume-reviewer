@@ -20,10 +20,9 @@ const PDFPage = React.lazy(() => import("react-pdf").then((module) => ({ default
 interface PDFViewerProps {
   fileUrl: string
   className?: string
-  onSectionClick?: (pageNumber: number, coordinates: { x: number; y: number }) => void
 }
 
-export function PDFViewer({ fileUrl, className, onSectionClick }: PDFViewerProps) {
+export function PDFViewer({ fileUrl, className }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [scale, setScale] = useState<number>(1.0)
@@ -70,13 +69,10 @@ export function PDFViewer({ fileUrl, className, onSectionClick }: PDFViewerProps
   }
 
   const handlePageClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (onSectionClick) {
-      const rect = event.currentTarget.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
-      console.log("[v0] PDF clicked at coordinates:", { x, y, page: pageNumber })
-      onSectionClick(pageNumber, { x, y })
-    }
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX - rect.left
+    const y = event.clientY - rect.top
+    console.log("[v0] PDF clicked at coordinates:", { x, y, page: pageNumber })
   }
 
   const downloadPDF = () => {

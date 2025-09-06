@@ -13,9 +13,8 @@ import {
   LucidePieChart as RechartsPieChart,
 } from "lucide-react"
 import type { ResumeAnalysis, QualityPillar, SectionAnalysis, LineByLineAudit } from "@/lib/schemas"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useFilterStore } from '@/lib/stores/filters'
-import { SeverityBadge } from './severity-badge'
 import { IssuesList } from './issues-list'
 import { ScoreCard } from './score-card'
 import { OverviewCard } from './overview-card'
@@ -24,11 +23,11 @@ import { SectionPerformanceCard } from './section-performance-card'
 import { ErrorBoundary } from "@/components/error-boundary"
 import { SeverityDistributionChart } from "./severity-dist"
 
+type Issue = LineByLineAudit & { sectionName?: string }
+
 interface AnalysisDashboardProps {
   analysis: ResumeAnalysis
 }
-
-// ScoreCard moved to components/score-card.tsx
 
 function QualityPillarCard({ pillar }: { pillar: QualityPillar }) {
   return (
@@ -61,50 +60,6 @@ function QualityPillarCard({ pillar }: { pillar: QualityPillar }) {
   )
 }
 
-function LineByLineAuditCard({ audit }: { audit: LineByLineAudit }) {
-  return (
-    <Card className="mb-4">
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-medium text-sm">{audit.element}</span>
-                <SeverityBadge severity={audit.severity} />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Original Text:</p>
-              <div className="bg-red-50 border border-red-200 rounded p-2">
-                <p className="text-sm font-mono">{audit.originalText}</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Critique:</p>
-              <p className="text-sm text-muted-foreground">{audit.critique}</p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Suggested Revision:</p>
-              <div className="bg-green-50 border border-green-200 rounded p-2">
-                <p className="text-sm font-mono">{audit.suggestedRevision}</p>
-              </div>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Reasoning:</p>
-              <p className="text-sm text-blue-700">{audit.reasoning}</p>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
 
 function SectionAnalysisCard({ section, onSectionClick }: { section: SectionAnalysis; onSectionClick?: (s: string) => void }) {
   return (
@@ -140,38 +95,29 @@ function SectionAnalysisCard({ section, onSectionClick }: { section: SectionAnal
 }
 
 export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
-  const activePillarFilter = useFilterStore((s: any) => s.pillar)
-  const activeSeverityFilter = useFilterStore((s: any) => s.severity)
-  const activeSectionFilter = useFilterStore((s: any) => s.section)
-  const setActivePillarFilter = useFilterStore((s: any) => s.setPillar)
-  const setActiveSeverityFilter = useFilterStore((s: any) => s.setSeverity)
-  const setActiveSectionFilter = useFilterStore((s: any) => s.setSection)
-  const clearAllFilters = useFilterStore((s: any) => s.clearAll)
-  const [showRecruiter, setShowRecruiter] = useState<boolean>(false)
 
-  const allIssues: (LineByLineAudit & { sectionName?: string })[] = useMemo(() => {
-    const issues: (LineByLineAudit & { sectionName?: string })[] = []
-      ; (analysis?.sectionAnalysis || []).forEach((s) => {
-        ; (s.lineByLineAudit || []).forEach((a) => {
-          issues.push({ ...a, sectionName: s.sectionName })
-        })
-      })
-    return issues
-  }, [analysis])
+  const activePillarFilter = useFilterStore((s) => s.pillar)
+  const activeSeverityFilter = useFilterStore((s) => s.severity)
+  const activeSectionFilter = useFilterStore((s) => s.section)
+  const setActivePillarFilter = useFilterStore((s) => s.setPillar)
+  const setActiveSeverityFilter = useFilterStore((s) => s.setSeverity)
+  const setActiveSectionFilter = useFilterStore((s) => s.setSection)
+  const clearAllFilters = useFilterStore((s) => s.clearAll)
+  const [pillar, severity, section] = useFilterStore((s) => [
+    s.pillar, s.severity, s.section
+  ])
 
-  const filteredIssues = useMemo(() => {
-    return allIssues.filter((issue) => {
-      if (activePillarFilter && issue.pillar !== activePillarFilter) return false
-      if (activeSeverityFilter && issue.severity !== activeSeverityFilter) return false
-      if (activeSectionFilter && issue.sectionName !== activeSectionFilter) return false
+  const filteredIssues: Issue[] = useMemo(() => {
+    return analysis?.sectionAnalysis?.map(({ lineByLineAudit, sectionName }) =>
+      lineByLineAudit?.map((a => ({ ...a, sectionName })))
+    ).flat().filter((issue) => {
+      if (pillar && issue.pillar !== pillar) return false
+      if (severity && issue.severity !== severity) return false
+      if (section && issue.sectionName !== section) return false
       return true
     })
-  }, [allIssues, activePillarFilter, activeSeverityFilter, activeSectionFilter])
+  }, [analysis])
 
-  const clearFilters = () => clearAllFilters()
-  const clearPillar = () => setActivePillarFilter(null)
-  const clearSeverity = () => setActiveSeverityFilter(null)
-  const clearSection = () => setActiveSectionFilter(null)
 
   if (!analysis) {
     return (
@@ -196,23 +142,23 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
         {activePillarFilter && (
           <Badge className="flex items-center gap-2">
             {activePillarFilter}
-            <button onClick={clearPillar} className="ml-2 text-xs">×</button>
+            <button onClick={() => setActivePillarFilter(null)} className="ml-2 text-xs">×</button>
           </Badge>
         )}
         {activeSeverityFilter && (
           <Badge className="flex items-center gap-2">
             {activeSeverityFilter}
-            <button onClick={clearSeverity} className="ml-2 text-xs">×</button>
+            <button onClick={() => setActivePillarFilter(null)} className="ml-2 text-xs">×</button>
           </Badge>
         )}
         {activeSectionFilter && (
           <Badge className="flex items-center gap-2">
             {activeSectionFilter}
-            <button onClick={clearSection} className="ml-2 text-xs">×</button>
+            <button onClick={() => setActiveSectionFilter(null)} className="ml-2 text-xs">×</button>
           </Badge>
         )}
         {(activePillarFilter || activeSeverityFilter || activeSectionFilter) && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
+          <Button variant="ghost" size="sm" onClick={clearAllFilters}>Clear all</Button>
         )}
       </div>
 
@@ -232,7 +178,7 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
                 <span className="flex items-center gap-2"><RechartsPieChart className="w-5 h-5" /> Issues</span>
                 <div className="flex items-center gap-2">
                   {(activePillarFilter || activeSeverityFilter || activeSectionFilter) && (
-                    <Button variant="ghost" onClick={clearFilters}>
+                    <Button variant="ghost" onClick={clearAllFilters}>
                       Clear Filters
                     </Button>
                   )}
@@ -245,7 +191,7 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
                 {activeSeverityFilter && <Badge className="ml-2">{activeSeverityFilter}</Badge>}
                 {activeSectionFilter && <Badge className="ml-2">{activeSectionFilter}</Badge>}
               </div>
-              <IssuesList issues={allIssues} />
+              <IssuesList issues={filteredIssues} />
             </CardContent>
           </Card>
         </div>

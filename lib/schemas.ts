@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+export const SeverityLevels = ["Critical", "High", "Medium", "Low"] as const
+
 export const QualityPillarSchema = z.object({
   pillar: z.string().describe("The name of the quality pillar being evaluated (e.g., 'Typography & Formatting')"),
   description: z.string().describe("Brief description of what this pillar evaluates"),
@@ -15,7 +17,7 @@ export const LineByLineAuditSchema = z.object({
   critique: z.string().describe("Detailed critique of why this element is problematic"),
   suggestedRevision: z.string().describe("Specific suggestion for how to improve this element"),
   reasoning: z.string().describe("Explanation of why the suggested revision is better"),
-  severity: z.enum(["Critical", "High", "Medium", "Low"]).describe("Severity level of the issue"),
+  severity: z.enum(SeverityLevels).describe("Severity level of the issue"),
   pillar: z
     .string()
     .describe(
@@ -78,3 +80,4 @@ export type LineByLineAudit = z.infer<typeof LineByLineAuditSchema>
 export type CandidateProfile = z.infer<typeof CandidateProfileSchema>
 export type RecruiterGutCheck = z.infer<typeof RecruiterGutCheckSchema>
 export type UploadedResume = z.infer<typeof UploadedResumeSchema>
+export type SeverityLevel = typeof SeverityLevels[number]

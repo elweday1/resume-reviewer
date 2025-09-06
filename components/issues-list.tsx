@@ -3,7 +3,18 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { LineByLineAudit } from '@/lib/schemas'
-import { SeverityBadge } from './severity-badge'
+import { SEVERITY_DATA } from '@/lib/utils'
+
+
+const SeverityBadge = ({ severity }: { severity: LineByLineAudit["severity"] }) => {
+    const { label, Icon, variant } = SEVERITY_DATA[severity]
+    return (
+        <Badge variant={variant} className="flex items-center gap-1">
+            <Icon className="w-3 h-3" />
+            {label}
+        </Badge>
+    )
+}
 
 export function IssuesList({ issues }: { issues: LineByLineAudit[] }) {
     return (

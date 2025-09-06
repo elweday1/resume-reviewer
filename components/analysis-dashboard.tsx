@@ -20,7 +20,6 @@ import { ScoreCard } from './score-card'
 import { OverviewCard } from './overview-card'
 import { QualityPillarsCard } from './quality-pillars-card'
 import { SectionPerformanceCard } from './section-performance-card'
-import { ErrorBoundary } from "@/components/error-boundary"
 import { SeverityDistributionChart } from "./severity-dist"
 
 type Issue = LineByLineAudit & { sectionName?: string }
@@ -95,7 +94,6 @@ function SectionAnalysisCard({ section, onSectionClick }: { section: SectionAnal
 }
 
 export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
-
   const setActivePillarFilter = useFilterStore((s) => s.setPillar)
   const setActiveSeverityFilter = useFilterStore((s) => s.setSeverity)
   const setActiveSectionFilter = useFilterStore((s) => s.setSection)
@@ -133,8 +131,6 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
   return (
     <div className="space-y-6">
       <OverviewCard analysis={analysis} />
-
-      {/* Global applied filters display */}
       <div className="flex items-center gap-2">
         {activePillarFilter && (
           <Badge className="flex items-center gap-2">
@@ -164,35 +160,32 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
         <SectionPerformanceCard sections={analysis.sectionAnalysis || []} />
       </div>
 
-      <ErrorBoundary name="Severity Distribution">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} />
 
-          {/* Issues List + Filters */}
-          <Card className="col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2"><LucidePieChart className="w-5 h-5" /> Issues</span>
-                <div className="flex items-center gap-2">
-                  {(activePillarFilter || activeSeverityFilter || activeSectionFilter) && (
-                    <Button variant="ghost" onClick={clearAllFilters}>
-                      Clear Filters
-                    </Button>
-                  )}
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="mb-3">
-                {activePillarFilter && <Badge>{activePillarFilter}</Badge>}
-                {activeSeverityFilter && <Badge className="ml-2">{activeSeverityFilter}</Badge>}
-                {activeSectionFilter && <Badge className="ml-2">{activeSectionFilter}</Badge>}
+        <Card className="col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2"><LucidePieChart className="w-5 h-5" /> Issues</span>
+              <div className="flex items-center gap-2">
+                {(activePillarFilter || activeSeverityFilter || activeSectionFilter) && (
+                  <Button variant="ghost" onClick={clearAllFilters}>
+                    Clear Filters
+                  </Button>
+                )}
               </div>
-              <IssuesList issues={filteredIssues} />
-            </CardContent>
-          </Card>
-        </div>
-      </ErrorBoundary>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-3">
+              {activePillarFilter && <Badge>{activePillarFilter}</Badge>}
+              {activeSeverityFilter && <Badge className="ml-2">{activeSeverityFilter}</Badge>}
+              {activeSectionFilter && <Badge className="ml-2">{activeSectionFilter}</Badge>}
+            </div>
+            <IssuesList issues={filteredIssues} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

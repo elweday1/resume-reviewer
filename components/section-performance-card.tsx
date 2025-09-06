@@ -5,6 +5,8 @@ import { BarChart3 } from 'lucide-react'
 import { useFilterStore } from '@/lib/stores/filters'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
 import { useMemo } from 'react'
+import { SEVERITY_DATA } from '@/lib/utils'
+import { SeverityLevels } from '@/lib/schemas'
 
 export function SectionPerformanceCard({ sections }: { sections: any[] }) {
     const setSeverity = useFilterStore((s) => s.setSeverity)
@@ -37,10 +39,9 @@ export function SectionPerformanceCard({ sections }: { sections: any[] }) {
                             <XAxis type="number" />
                             <YAxis type="category" dataKey="name" width={160} />
                             <Tooltip />
-                            <Bar dataKey="critical" stackId="a" fill="#dc2626" onClick={() => setSeverity('Critical')} />
-                            <Bar dataKey="high" stackId="a" fill="#ea580c" onClick={() => setSeverity('High')} />
-                            <Bar dataKey="medium" stackId="a" fill="#ca8a04" onClick={() => setSeverity('Medium')} />
-                            <Bar dataKey="low" stackId="a" fill="#16a34a" onClick={() => setSeverity('Low')} />
+                            {SeverityLevels.map((severity) => (
+                                <Bar dataKey={severity} stackId="a" fill={SEVERITY_DATA[severity].color} onClick={() => setSeverity(severity)} />
+                            ))}
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

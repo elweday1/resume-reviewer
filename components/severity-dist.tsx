@@ -2,18 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LucidePieChart } from 'lucide-react'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
-import type { ResumeAnalysis } from '@/lib/schemas'
+import type { ResumeAnalysis, SeverityLevel } from '@/lib/schemas'
 import { useMemo } from 'react'
+import { SEVERITY_DATA } from '@/lib/utils'
 
-function getSeverityColor(severity: string) {
-  switch (severity) {
-    case 'Critical': return '#dc2626'
-    case 'High': return '#ea580c'
-    case 'Medium': return '#ca8a04'
-    case 'Low': return '#6b7280'
-    default: return '#6b7280'
-  }
-}
 export function SeverityDistributionChart({ analysis, onSeverityClick }: { analysis: ResumeAnalysis; onSeverityClick?: (s: string) => void }) {
   if (!analysis?.sectionAnalysis || analysis.sectionAnalysis.length === 0) {
     return (
@@ -44,7 +36,7 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
       .map(([severity, count]) => ({
         name: severity,
         value: count,
-        color: getSeverityColor(severity),
+        color: SEVERITY_DATA[severity as SeverityLevel].color,
       }))
     , [analysis.sectionAnalysis])
 

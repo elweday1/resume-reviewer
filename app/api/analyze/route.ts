@@ -4,6 +4,8 @@ import { google } from "@ai-sdk/google"
 import { ResumeAnalysisSchema } from "@/lib/schemas"
 import { createClient } from "@/lib/supabase/server"
 
+const MODEL_NAME = "gemini-2.0-flash"
+
 const ANALYSIS_PROMPT = `You are a "Resume Demolition & Reconstruction" AI - a cynical, world-class executive recruiter who has seen it all and is unimpressed by 99% of resumes. You are obsessed with the minutiae because you know that in a stack of 500 applications, a single typo, awkward phrase, or formatting inconsistency is enough to disqualify a candidate.
 
 Your evaluation is based on a final score (0-100) that represents the resume's 'survival chance' in a highly competitive applicant pool. A score below 80 means it is unlikely to get a second glance. Every detail, from margin consistency to verb choice, must be weighted to calculate this score.
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file URL provided" }, { status: 400 })
     }
 
-    console.log("[v0] Starting PDF analysis with Gemini 1.5 Flash...")
+    console.log(`[v0] Starting PDF analysis with ${MODEL_NAME}...`)
 
     const pdfResponse = await fetch(fileUrl)
     if (!pdfResponse.ok) {
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
     const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
 
     const { object: analysisData } = await generateObject({
-      model: google("gemini-2.0-flash"),
+      model: google(MODEL_NAME),
       messages: [
         {
           role: "system" as const,

@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { generateObject } from "ai"
 import { google } from "@ai-sdk/google"
 import { ResumeAnalysisSchema } from "@/lib/schemas"
+import { createClient } from "@/lib/supabase/server"
 
 const ANALYSIS_PROMPT = `You are a "Resume Demolition & Reconstruction" AI - a cynical, world-class executive recruiter who has seen it all and is unimpressed by 99% of resumes. You are obsessed with the minutiae because you know that in a stack of 500 applications, a single typo, awkward phrase, or formatting inconsistency is enough to disqualify a candidate.
 
@@ -23,29 +24,63 @@ Provide detailed section-by-section analysis with line-by-line audits for every 
 
 export async function POST(request: NextRequest) {
   try {
-    const { resumeText, fileUrl } = await request.json()
+    const { fileUrl, filename } = await request.json()
 
-    if (!resumeText) {
-      return NextResponse.json({ error: "No resume text provided" }, { status: 400 })
+    if (!fileUrl) {
+      return NextResponse.json({ error: "No file URL provided" }, { status: 400 })
     }
 
-    console.log("[v0] Starting resume analysis with structured responses...")
+    console.log("[v0] Starting PDF analysis with Gemini 1.5 Pro...")
 
     const { object: analysisData } = await generateObject({
-      model: google("gemini-1.5-pro"),
-      prompt: `${ANALYSIS_PROMPT}\n\nNow, analyze the following resume:\n\n${resumeText}`,
+      model: google("gemini-1.5-flash"),
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `${ANALYSIS_PROMPT}\n\nAnalyze the resume in the PDF file provided below:`,
+            },
+            {
+              type: "file",
+              data: fileUrl,
+              mimeType: "application/pdf",
+            },
+          ],
+        },
+      ],
       schema: ResumeAnalysisSchema,
       temperature: 0.3,
     })
 
-    console.log("[v0] Analysis completed successfully with score:", analysisData.score)
+    console.log("[v0] PDF analysis completed successfully with score:", analysisData.score)
+
+    const supabase = await createClient()
+
+    const { data: savedAnalysis, error: dbError } = await supabase
+      .from("analyses")
+      .insert({
+        pdf_url: fileUrl,
+        pdf_filename: filename || "resume.pdf",
+        analysis_data: analysisData,
+      })
+      .select("id, share_token")
+      .single()
+
+    if (dbError) {
+      console.error("[v0] Database error:", dbError)
+      // Continue without saving if DB fails
+    }
 
     return NextResponse.json({
       analysis: analysisData,
       fileUrl,
+      shareToken: savedAnalysis?.share_token,
+      analysisId: savedAnalysis?.id,
     })
   } catch (error) {
-    console.error("[v0] Analysis error:", error)
+    console.error("[v0] PDF analysis error:", error)
 
     if (error instanceof Error && error.message.includes("JSON")) {
       return NextResponse.json(
@@ -60,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Analysis failed",
+        error: error instanceof Error ? error.message : "PDF analysis failed",
         type: error instanceof Error ? error.constructor.name : "Unknown",
       },
       { status: 500 },

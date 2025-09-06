@@ -4,9 +4,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Loader2, AlertCircle } from "lucide-react"
+import { ArrowLeft, Loader2, AlertCircle, Share2 } from "lucide-react"
 import type { ResumeAnalysis } from "@/lib/schemas"
-import { extractTextFromPDF } from "@/lib/pdf-utils"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { ErrorBoundary } from "@/components/error-boundary"
@@ -24,6 +23,7 @@ export default function AnalysisPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(true)
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [shareToken, setShareToken] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -39,20 +39,16 @@ export default function AnalysisPage() {
       setUploadedFile(file)
 
       try {
-        console.log("[v0] Starting analysis process...")
+        console.log("[v0] Starting PDF analysis with Gemini...")
 
-        // Extract text from PDF
-        const resumeText = await extractTextFromPDF(file.blobUrl)
-
-        // Send to analysis API
         const response = await fetch("/api/analyze", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            resumeText,
             fileUrl: file.blobUrl,
+            filename: file.filename,
           }),
         })
 
@@ -63,6 +59,7 @@ export default function AnalysisPage() {
         }
 
         setAnalysis(data.analysis)
+        setShareToken(data.shareToken)
         console.log("[v0] Analysis completed:", data.analysis.score)
       } catch (err) {
         console.error("[v0] Analysis error:", err)
@@ -74,6 +71,23 @@ export default function AnalysisPage() {
 
     analyzeResume()
   }, [router])
+
+  const handleShare = async () => {
+    if (!shareToken) return
+
+    const shareUrl = `${window.location.origin}/share/${shareToken}`
+
+    if (navigator.share) {
+      await navigator.share({
+        title: "Resume Analysis Results",
+        text: "Check out my resume analysis results",
+        url: shareUrl,
+      })
+    } else {
+      await navigator.clipboard.writeText(shareUrl)
+      // You could add a toast notification here
+    }
+  }
 
   const handleSectionClick = (pageNumber: number, coordinates: { x: number; y: number }) => {
     console.log(`[v0] PDF section clicked - Page: ${pageNumber}, Coordinates:`, coordinates)
@@ -97,10 +111,16 @@ export default function AnalysisPage() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Upload
             </Button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-2xl font-bold text-foreground">Resume Analysis</h1>
               <p className="text-muted-foreground">{uploadedFile.filename}</p>
             </div>
+            {analysis && shareToken && (
+              <Button onClick={handleShare} variant="outline">
+                <Share2 className="w-4 h-4 mr-2" />
+                Share Results
+              </Button>
+            )}
           </div>
 
           {error && (

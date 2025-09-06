@@ -45,6 +45,11 @@ export async function POST(request: NextRequest) {
       prompt: ANALYSIS_PROMPT,
       messages: [
         {
+          role: "system",
+          content: ANALYSIS_PROMPT
+
+        },
+        {
           role: "user",
           content: [
             {

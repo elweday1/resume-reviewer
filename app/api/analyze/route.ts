@@ -22,7 +22,9 @@ Analyze all 6 quality pillars:
 5. Content Relevance & Tailoring - alignment with target role, keywords
 6. Career Narrative & Cohesion - professional growth story, trajectory coherence
 
-Provide detailed section-by-section analysis with line-by-line audits for every problematic element.`
+Provide detailed section-by-section analysis with line-by-line audits for every problematic element.
+
+Important: For every line-by-line audit item, include a new field called 'pillar' which MUST be one of the six quality pillars listed above (exact string match). Also return a top-level flat array named 'issues' containing every audit across all sections (with duplicate information allowed) so the UI can render and filter a single list of issues quickly. Ensure the output strictly conforms to the provided JSON schema.`
 
 export async function POST(request: NextRequest) {
   try {

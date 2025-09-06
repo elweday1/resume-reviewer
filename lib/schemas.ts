@@ -16,6 +16,11 @@ export const LineByLineAuditSchema = z.object({
   suggestedRevision: z.string().describe("Specific suggestion for how to improve this element"),
   reasoning: z.string().describe("Explanation of why the suggested revision is better"),
   severity: z.enum(["Critical", "High", "Medium", "Low"]).describe("Severity level of the issue"),
+  pillar: z
+    .string()
+    .describe(
+      "Which quality pillar this audit item belongs to (e.g., 'Visual Typography & Formatting', 'Information Architecture', 'Achievement-Oriented Writing', 'Language & Prose', 'Content Relevance & Tailoring', 'Career Narrative & Cohesion')",
+    ),
 })
 
 export const SectionAnalysisSchema = z.object({

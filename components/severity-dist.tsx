@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LucidePieChart } from 'lucide-react'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import type { ResumeAnalysis } from '@/lib/schemas'
+import { useMemo } from 'react'
 
 export function SeverityDistributionChart({ analysis, onSeverityClick }: { analysis: ResumeAnalysis; onSeverityClick?: (s: string) => void }) {
   if (!analysis?.sectionAnalysis || analysis.sectionAnalysis.length === 0) {
@@ -21,7 +22,7 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
     )
   }
 
-  const severityCounts = analysis.sectionAnalysis.reduce(
+  const severityCounts = useMemo(() => analysis.sectionAnalysis.reduce(
     (acc, section) => {
       if (section.lineByLineAudit && Array.isArray(section.lineByLineAudit)) {
         section.lineByLineAudit.forEach((audit) => {
@@ -33,9 +34,9 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
       return acc
     },
     {} as Record<string, number>,
-  )
+  ), [analysis.sectionAnalysis])
 
-  const data = Object.entries(severityCounts)
+  const data = useMemo(() => Object.entries(severityCounts)
     .filter(([, count]) => count > 0)
     .map(([severity, count]) => ({
       name: severity,
@@ -48,7 +49,7 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
             : severity === "Medium"
               ? "#ca8a04"
               : "#16a34a",
-    }))
+    })), [severityCounts])
 
   const totalIssues = data.reduce((sum, item) => sum + item.value, 0)
 

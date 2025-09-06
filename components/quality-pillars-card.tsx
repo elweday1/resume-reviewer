@@ -6,6 +6,7 @@ import { QualityPillar } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts'
 import { useFilterStore } from '@/lib/stores/filters'
+import { useMemo } from 'react'
 
 export function QualityPillarsCard({ pillars }: { pillars: QualityPillar[] }) {
     const setPillar = useFilterStore((s) => s.setPillar)
@@ -26,7 +27,7 @@ export function QualityPillarsCard({ pillars }: { pillars: QualityPillar[] }) {
         )
     }
 
-    const data = pillars.map((pillar) => ({ pillar: pillar.pillar.replace(' & ', '\n& '), score: pillar.score, fullName: pillar.pillar }))
+    const data = useMemo(() => pillars.map((pillar) => ({ pillar: pillar.pillar.replace(' & ', '\n& '), score: pillar.score, fullName: pillar.pillar })), [pillars])
 
     return (
         <Card>

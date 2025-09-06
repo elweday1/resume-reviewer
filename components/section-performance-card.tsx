@@ -4,11 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart3 } from 'lucide-react'
 import { useFilterStore } from '@/lib/stores/filters'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
+import { useMemo } from 'react'
 
 export function SectionPerformanceCard({ sections }: { sections: any[] }) {
     const setSeverity = useFilterStore((s) => s.setSeverity)
     const setSection = useFilterStore((s) => s.setSection)
-
+    const data = useMemo(() => sections.map((s) => ({
+        name: s.sectionName,
+        issues: s.lineByLineAudit.length,
+        score: s.sectionScore,
+        critical: s.lineByLineAudit.filter((a: any) => a.severity === 'Critical').length,
+        high: s.lineByLineAudit.filter((a: any) => a.severity === 'High').length,
+        medium: s.lineByLineAudit.filter((a: any) => a.severity === 'Medium').length,
+        low: s.lineByLineAudit.filter((a: any) => a.severity === 'Low').length,
+    })), [sections])
     return (
         <Card>
             <CardHeader>
@@ -22,15 +31,7 @@ export function SectionPerformanceCard({ sections }: { sections: any[] }) {
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                             layout="vertical"
-                            data={sections.map((s) => ({
-                                name: s.sectionName,
-                                issues: s.lineByLineAudit.length,
-                                score: s.sectionScore,
-                                critical: s.lineByLineAudit.filter((a: any) => a.severity === 'Critical').length,
-                                high: s.lineByLineAudit.filter((a: any) => a.severity === 'High').length,
-                                medium: s.lineByLineAudit.filter((a: any) => a.severity === 'Medium').length,
-                                low: s.lineByLineAudit.filter((a: any) => a.severity === 'Low').length,
-                            }))}
+                            data={data}
                             margin={{ top: 10, right: 20, left: 20, bottom: 20 }}
                         >
                             <CartesianGrid strokeDasharray="3 3" />

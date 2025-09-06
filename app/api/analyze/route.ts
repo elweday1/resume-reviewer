@@ -30,11 +30,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file URL provided" }, { status: 400 })
     }
 
-    console.log("[v0] Starting PDF analysis with Gemini 1.5 Pro...")
+    console.log("[v0] Starting PDF analysis with Gemini 1.5 Flash...")
+
+    const pdfResponse = await fetch(fileUrl)
+    if (!pdfResponse.ok) {
+      throw new Error("Failed to fetch PDF file")
+    }
+
+    const pdfBuffer = await pdfResponse.arrayBuffer()
+    const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
 
     const { object: analysisData } = await generateObject({
       model: google("gemini-1.5-flash"),
-      prompt: `${ANALYSIS_PROMPT}\n\nAnalyze the resume in the PDF file provided. The PDF is available at: ${fileUrl}`,
+      prompt: ANALYSIS_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Please analyze this resume PDF according to the instructions provided.",
+            },
+            {
+              type: "file",
+              data: pdfBase64,
+              mimeType: "application/pdf",
+            },
+          ],
+        },
+      ],
       schema: ResumeAnalysisSchema,
       temperature: 0.3,
     })

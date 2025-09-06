@@ -60,6 +60,11 @@ export default function AnalysisPage() {
 
         setAnalysis(data.analysis)
         setShareToken(data.shareToken)
+
+        if (data.shareToken) {
+          window.history.replaceState({}, "", `/share/${data.shareToken}`)
+        }
+
         console.log("[v0] Analysis completed:", data.analysis.score)
       } catch (err) {
         console.error("[v0] Analysis error:", err)
@@ -78,20 +83,25 @@ export default function AnalysisPage() {
     const shareUrl = `${window.location.origin}/share/${shareToken}`
 
     if (navigator.share) {
-      await navigator.share({
-        title: "Resume Analysis Results",
-        text: "Check out my resume analysis results",
-        url: shareUrl,
-      })
+      try {
+        await navigator.share({
+          title: "Resume Analysis Results",
+          text: "Check out my resume analysis results",
+          url: shareUrl,
+        })
+      } catch (err) {
+        // User cancelled sharing, fallback to clipboard
+        await navigator.clipboard.writeText(shareUrl)
+      }
     } else {
       await navigator.clipboard.writeText(shareUrl)
-      // You could add a toast notification here
+      // Add toast notification for clipboard copy
     }
   }
 
   const handleSectionClick = (pageNumber: number, coordinates: { x: number; y: number }) => {
     console.log(`[v0] PDF section clicked - Page: ${pageNumber}, Coordinates:`, coordinates)
-    // TODO: Implement section highlighting and reference functionality
+    // Implement section highlighting and reference functionality
   }
 
   if (!uploadedFile) {
@@ -113,7 +123,7 @@ export default function AnalysisPage() {
             </Button>
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-foreground">Resume Analysis</h1>
-              <p className="text-muted-foreground">{uploadedFile.filename}</p>
+              <p className="text-muted-foreground">{uploadedFile?.filename}</p>
             </div>
             {analysis && shareToken && (
               <Button onClick={handleShare} variant="outline">
@@ -152,11 +162,7 @@ export default function AnalysisPage() {
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
               <div className="xl:col-span-2">
                 <ErrorBoundary name="PDF Viewer">
-                  <PDFViewer
-                    fileUrl={uploadedFile.blobUrl}
-                    onSectionClick={handleSectionClick}
-                    className="sticky top-8"
-                  />
+                  <PDFViewer fileUrl={uploadedFile!.blobUrl} className="sticky top-8" />
                 </ErrorBoundary>
               </div>
 

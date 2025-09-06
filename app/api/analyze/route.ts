@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateObject } from "ai"
 import { google } from "@ai-sdk/google"
-import { ResumeAnalysisSchema } from "@/lib/schemas"
+import { ResumeAnalysisSchema, type ResumeAnalysis } from "@/lib/schemas"
 import { createClient } from "@/lib/supabase/server"
 
 const MODEL_NAME = "gemini-2.0-flash"
@@ -35,6 +35,36 @@ Common Mistakes: Check for the top five resume mistakes:
 Ensure the resume does not include: a picture, age, gender, slang, or a list of references. 
 `
 
+async function analyzeFile(pdfBase64: string): Promise<ResumeAnalysis> {
+  const { object: analysisData } = await generateObject({
+    model: google(MODEL_NAME),
+    messages: [
+      {
+        role: "system" as const,
+        content: ANALYSIS_PROMPT
+      },
+      {
+        role: "user" as const,
+        content: [
+          {
+            type: "text",
+            text: "Please analyze this resume PDF according to the instructions provided.",
+          },
+          {
+            type: "file",
+            data: pdfBase64,
+            mediaType: "application/pdf",
+          },
+        ],
+      },
+    ],
+    schema: ResumeAnalysisSchema,
+    temperature: 0.3,
+  })
+
+  return analysisData
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { fileUrl, filename } = await request.json()
@@ -52,32 +82,7 @@ export async function POST(request: NextRequest) {
 
     const pdfBuffer = await pdfResponse.arrayBuffer()
     const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
-
-    const { object: analysisData } = await generateObject({
-      model: google(MODEL_NAME),
-      messages: [
-        {
-          role: "system" as const,
-          content: ANALYSIS_PROMPT
-        },
-        {
-          role: "user" as const,
-          content: [
-            {
-              type: "text",
-              text: "Please analyze this resume PDF according to the instructions provided.",
-            },
-            {
-              type: "file",
-              data: pdfBase64,
-              mediaType: "application/pdf",
-            },
-          ],
-        },
-      ],
-      schema: ResumeAnalysisSchema,
-      temperature: 0.3,
-    })
+    const analysisData = await analyzeFile(pdfBase64)
 
     console.log("[v0] PDF analysis completed successfully with score:", analysisData.score)
 

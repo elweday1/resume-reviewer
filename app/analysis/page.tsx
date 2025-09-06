@@ -131,7 +131,7 @@ export default function AnalysisPage() {
       // Get uploaded file info from sessionStorage
       const storedFile = sessionStorage.getItem("uploadedResume")
       if (!storedFile) {
-        router.push("/upload")
+        // router.push("/upload")
         return
       }
 
@@ -145,7 +145,7 @@ export default function AnalysisPage() {
         setShareToken(data.shareToken)
 
         if (data.shareToken) {
-          window.history.replaceState({}, "", `/share/${data.shareToken}`)
+          // window.history.replaceState({}, "", `/share/${data.shareToken}`)
         }
 
         console.log("[v0] Analysis completed:", data.analysis.score)

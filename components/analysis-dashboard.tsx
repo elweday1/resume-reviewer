@@ -96,14 +96,11 @@ function SectionAnalysisCard({ section, onSectionClick }: { section: SectionAnal
 
 export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
 
-  const activePillarFilter = useFilterStore((s) => s.pillar)
-  const activeSeverityFilter = useFilterStore((s) => s.severity)
-  const activeSectionFilter = useFilterStore((s) => s.section)
   const setActivePillarFilter = useFilterStore((s) => s.setPillar)
   const setActiveSeverityFilter = useFilterStore((s) => s.setSeverity)
   const setActiveSectionFilter = useFilterStore((s) => s.setSection)
   const clearAllFilters = useFilterStore((s) => s.clearAll)
-  const [pillar, severity, section] = useFilterStore((s) => [
+  const [activePillarFilter, activeSeverityFilter, activeSectionFilter] = useFilterStore((s) => [
     s.pillar, s.severity, s.section
   ])
 
@@ -111,12 +108,12 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
     return analysis?.sectionAnalysis?.map(({ lineByLineAudit, sectionName }) =>
       lineByLineAudit?.map((a => ({ ...a, sectionName })))
     ).flat().filter((issue) => {
-      if (pillar && issue.pillar !== pillar) return false
-      if (severity && issue.severity !== severity) return false
-      if (section && issue.sectionName !== section) return false
+      if (activePillarFilter && issue.pillar !== activePillarFilter) return false
+      if (activeSeverityFilter && issue.severity !== activeSeverityFilter) return false
+      if (activeSectionFilter && issue.sectionName !== activeSectionFilter) return false
       return true
     })
-  }, [analysis, pillar, severity, section])
+  }, [analysis, activePillarFilter, activeSeverityFilter, activeSectionFilter])
 
 
   if (!analysis) {

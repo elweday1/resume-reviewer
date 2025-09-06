@@ -2,8 +2,25 @@ import { z } from "zod"
 
 export const SeverityLevels = ["Critical", "High", "Medium", "Low"] as const
 
+export const Pillar = z.enum([
+
+  "Visual Typography & Formatting",
+  "Information Architecture",
+  "Achievement-Oriented Writing",
+  "Language & Prose",
+  "Content Relevance & Tailoring",
+  "Career Narrative & Cohesion",
+]).describe(`
+Visual Typography & Formatting - font choice, consistency, margins, white space, PDF rendering
+Information Architecture - logical flow, scannability, section ordering
+Achievement - Oriented Writing - accomplishments vs duties, impact framing
+Language & Prose - typos, grammar, tense consistency, verb choice
+Content Relevance & Tailoring - alignment with target role, keywords
+Career Narrative & Cohesion - professional growth story, trajectory coherence
+`)
+
 export const QualityPillarSchema = z.object({
-  pillar: z.string().describe("The name of the quality pillar being evaluated (e.g., 'Typography & Formatting')"),
+  pillar: Pillar.describe("Name of the quality pillar being evaluated"),
   description: z.string().describe("Brief description of what this pillar evaluates"),
   score: z.number().min(0).max(100).describe("Numerical score from 0-100 for this pillar"),
   findings: z.string().describe("Detailed findings and observations for this pillar"),
@@ -18,8 +35,7 @@ export const LineByLineAuditSchema = z.object({
   suggestedRevision: z.string().describe("Specific suggestion for how to improve this element"),
   reasoning: z.string().describe("Explanation of why the suggested revision is better"),
   severity: z.enum(SeverityLevels).describe("Severity level of the issue"),
-  pillar: z
-    .string()
+  pillar: Pillar
     .describe(
       "Which quality pillar this audit item belongs to (e.g., 'Visual Typography & Formatting', 'Information Architecture', 'Achievement-Oriented Writing', 'Language & Prose', 'Content Relevance & Tailoring', 'Career Narrative & Cohesion')",
     ),
@@ -56,10 +72,10 @@ export const ResumeAnalysisSchema = z.object({
     .number()
     .min(0)
     .max(100)
-    .describe("Overall resume score representing survival chance in competitive job market"),
+    .describe("Overall resume score from 0-100 based on combined pillar evaluations"),
   candidateProfile: CandidateProfileSchema.describe("Analysis of the candidate's profile and positioning"),
   recruiterGutCheck: RecruiterGutCheckSchema.describe("Recruiter's immediate gut reaction and red flags"),
-  qualityPillarsAnalysis: z.array(QualityPillarSchema).describe("Analysis across 6 key quality pillars"),
+  qualityPillarsAnalysis: z.array(QualityPillarSchema).describe("Analysis across key quality pillars"),
   sectionAnalysis: z
     .array(SectionAnalysisSchema)
     .describe("Detailed section-by-section breakdown with line-by-line audits"),

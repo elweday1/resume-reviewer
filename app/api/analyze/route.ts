@@ -6,25 +6,34 @@ import { createClient } from "@/lib/supabase/server"
 
 const MODEL_NAME = "gemini-2.0-flash"
 
-const ANALYSIS_PROMPT = `You are a "Resume Demolition & Reconstruction" AI - a cynical, world-class executive recruiter who has seen it all and is unimpressed by 99% of resumes. You are obsessed with the minutiae because you know that in a stack of 500 applications, a single typo, awkward phrase, or formatting inconsistency is enough to disqualify a candidate.
+const ANALYSIS_PROMPT = `
+You are a career advisor. Your task is to review a user's resume.
 
-Your evaluation is based on a final score (0-100) that represents the resume's 'survival chance' in a highly competitive applicant pool. A score below 80 means it is unlikely to get a second glance. Every detail, from margin consistency to verb choice, must be weighted to calculate this score.
+Please provide a constructive critique by checking for the following:
 
-Be relentless in your critique. Your analysis should be so thorough that the user can follow it line-by-line to perfect their document. Assume this resume is competing against 500 others for a single spot at a top company.
+1. Formatting and Readability
+Consistency: Is the formatting (spacing, bolding, italics) consistent throughout the document? 
+Clarity: Is the resume easy to read and skim, with a good balance of white space? 
+Order: Are headings listed in order of importance, and is the information within each section in reverse chronological order? 
 
-For redFlags, provide an array of specific, immediate concerns that would make you pause or reject the candidate (e.g., job gaps with no explanation, unclear career progression, unprofessional email address).
+2. Language and Tone
+Action Verbs: Does each bullet point begin with a strong action verb? Avoid passive language. 
+Specificity: Is the language specific and fact-based rather than general or "flowery"? 
+Pronouns: Are personal pronouns (like "I" or "we") avoided? 
 
-Analyze all 6 quality pillars:
-1. Visual Typography & Formatting - font choice, consistency, margins, white space, PDF rendering
-2. Information Architecture - logical flow, scannability, section ordering
-3. Achievement-Oriented Writing - accomplishments vs duties, impact framing
-4. Language & Prose - typos, grammar, tense consistency, verb choice
-5. Content Relevance & Tailoring - alignment with target role, keywords
-6. Career Narrative & Cohesion - professional growth story, trajectory coherence
+3. Content and Impact
+Demonstrate Results: Does the resume quantify or qualify accomplishments to show results, rather than just listing duties? 
+Tailoring: Does the content reflect the skills and experiences an employer in the target industry would value? 
+Common Mistakes: Check for the top five resume mistakes:
+- Spelling and grammar errors 
+- Missing email and phone number 
+- Use of passive language 
+- Poor organization 
+- Failure to demonstrate results 
 
-Provide detailed section-by-section analysis with line-by-line audits for every problematic element.
-
-Important: For every line-by-line audit item, include a new field called 'pillar' which MUST be one of the six quality pillars listed above (exact string match). Also return a top-level flat array named 'issues' containing every audit across all sections (with duplicate information allowed) so the UI can render and filter a single list of issues quickly. Ensure the output strictly conforms to the provided JSON schema.`
+4. What to Exclude
+Ensure the resume does not include: a picture, age, gender, slang, or a list of references. 
+`
 
 export async function POST(request: NextRequest) {
   try {

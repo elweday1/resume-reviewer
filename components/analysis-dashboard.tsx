@@ -182,7 +182,7 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
               {activeSeverityFilter && <Badge className="ml-2">{activeSeverityFilter}</Badge>}
               {activeSectionFilter && <Badge className="ml-2">{activeSectionFilter}</Badge>}
             </div>
-            {/* <IssuesList issues={filteredIssues} /> */}
+            <IssuesList issues={filteredIssues} />
           </CardContent>
         </Card>
       </div>

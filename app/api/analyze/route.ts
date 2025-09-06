@@ -3,6 +3,7 @@ import { generateObject } from "ai"
 import { google } from "@ai-sdk/google"
 import { ResumeAnalysisSchema, type ResumeAnalysis } from "@/lib/schemas"
 import { createClient } from "@/lib/supabase/server"
+import crypto from 'crypto'
 
 const MODEL_NAME = "gemini-2.0-flash"
 
@@ -67,12 +68,22 @@ async function analyzeFile(pdfBase64: string): Promise<ResumeAnalysis> {
 async function uploadFile({ analysisData, filename, fileUrl }: { filename: string, analysisData: ResumeAnalysis, fileUrl: string }) {
   const supabase = createClient()
 
+  // Generate a URL-safe base64 token server-side to avoid relying on
+  // a Postgres `encode(..., 'base64url')` default which may not be supported
+  // on all Postgres versions.
+  const raw = crypto.randomBytes(32)
+  const shareToken = raw.toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+
   const { data: savedAnalysis, error: dbError } = await supabase
     .from("analyses")
     .insert({
       pdf_url: fileUrl,
       pdf_filename: filename || "resume.pdf",
       analysis_data: analysisData,
+      share_token: shareToken,
     })
     .select("id, share_token")
     .single()

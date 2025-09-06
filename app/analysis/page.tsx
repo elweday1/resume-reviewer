@@ -10,12 +10,112 @@ import { PDFViewer } from "@/components/pdf-viewer"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { ErrorBoundary } from "@/components/error-boundary"
 
+const USE_MOCK_DATA = true
+
+const MOCK_ANALYSIS: ResumeAnalysis = {
+  score: 85,
+  qualityPillarsAnalysis: [
+    {
+      pillar: "Career Narrative & Cohesion",
+      score: 90,
+      description: "Measures the relevance and clarity of the resume content.",
+      findings: "Your resume content is clear and relevant to the job description.",
+    },
+    {
+      pillar: "Visual Typography & Formatting",
+      score: 80,
+      description: "Assesses the visual layout and organization of the resume.",
+      findings: "Consider using bullet points for better readability in some sections.",
+    },
+    {
+      pillar: "Language & Prose",
+      score: 75,
+      description: "Evaluates the use of industry-specific keywords.",
+      findings: "Incorporate more keywords from the job description to pass ATS scans.",
+    },
+  ],
+  sectionAnalysis: [
+    {
+      sectionName: "Work Experience",
+      sectionScore: 80,
+      lineByLineAudit: [
+        {
+          element: "Led a team of 5 engineers to develop a new feature.",
+          reasoning: "This is a strong accomplishment that demonstrates leadership.",
+          pillar: "Career Narrative & Cohesion",
+          originalText: "Worked on various projects.",
+          severity: "Medium",
+          critique: "Be more specific about your role and achievements.",
+          suggestedRevision: "Led a team of 5 engineers to develop a new feature that increased user engagement by 20%.",
+        },
+      ],
+      comments: "Good detail, but could use more quantifiable results."
+    },
+    {
+      sectionName: "Education",
+      sectionScore: 90,
+      lineByLineAudit: [
+        {
+          element: "Graduated with honors.",
+          reasoning: "This is a positive highlight that should be retained.",
+          pillar: "Career Narrative & Cohesion",
+          originalText: "Bachelor of Science in Computer Science, XYZ University, 2018",
+          severity: "Low",
+          critique: "Add relevant coursework or honors if applicable.",
+          suggestedRevision: "Include any relevant courses or academic achievements.",
+        },
+      ],
+      comments: "Well-presented, minor additions could enhance."
+    },
+  ],
+  candidateProfile: {
+    inferredExperienceLevel: "Mid-Level",
+    inferredRole: "Software Engineer",
+    resumeLengthAnalysis: "Optimal length for your experience level.",
+  },
+  recruiterGutCheck: {
+    firstImpression: "The resume is well-structured but could benefit from more specific achievements.",
+    redFlags: [
+      "Lack of quantifiable results in work experience.",
+      "Generic statements that don't highlight unique skills.",
+    ],
+  },
+}
 interface UploadedFile {
   url: string
   filename: string
   size: number
   type: string
   blobUrl: string
+}
+
+async function getAnalysis(file: UploadedFile): Promise<{ analysis: ResumeAnalysis, shareToken: string | null }> {
+  if (!USE_MOCK_DATA) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({ analysis: MOCK_ANALYSIS, shareToken: "mock-share-token" })
+      }, 100)
+    })
+  }
+
+  const response = await fetch("/api/analyze", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fileUrl: file.blobUrl,
+      filename: file.filename,
+    }),
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.error || "Analysis failed")
+  }
+
+  return data
 }
 
 export default function AnalysisPage() {
@@ -40,24 +140,7 @@ export default function AnalysisPage() {
 
       try {
         console.log("[v0] Starting PDF analysis with Gemini...")
-
-        const response = await fetch("/api/analyze", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            fileUrl: file.blobUrl,
-            filename: file.filename,
-          }),
-        })
-
-        const data = await response.json()
-
-        if (!response.ok) {
-          throw new Error(data.error || "Analysis failed")
-        }
-
+        const data = await getAnalysis(file)
         setAnalysis(data.analysis)
         setShareToken(data.shareToken)
 

@@ -10,7 +10,7 @@ import {
   AlertCircle,
   FileText,
   Eye,
-  LucidePieChart as RechartsPieChart,
+  LucidePieChart,
 } from "lucide-react"
 import type { ResumeAnalysis, QualityPillar, SectionAnalysis, LineByLineAudit } from "@/lib/schemas"
 import { useMemo } from "react"
@@ -175,7 +175,7 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
           <Card className="col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center gap-2"><RechartsPieChart className="w-5 h-5" /> Issues</span>
+                <span className="flex items-center gap-2"><LucidePieChart className="w-5 h-5" /> Issues</span>
                 <div className="flex items-center gap-2">
                   {(activePillarFilter || activeSeverityFilter || activeSectionFilter) && (
                     <Button variant="ghost" onClick={clearAllFilters}>

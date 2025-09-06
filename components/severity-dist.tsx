@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { RechartsPieChart } from 'lucide-react'
+import { LucidePieChart } from 'lucide-react'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts'
 import type { ResumeAnalysis } from '@/lib/schemas'
 
@@ -10,7 +10,7 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <RechartsPieChart className="w-5 h-5" />
+            <LucidePieChart className="w-5 h-5" />
             Issue Severity Distribution
           </CardTitle>
         </CardHeader>
@@ -57,7 +57,7 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <RechartsPieChart className="w-5 h-5" />
+            <LucidePieChart className="w-5 h-5" />
             Issue Severity Distribution
           </CardTitle>
         </CardHeader>
@@ -74,7 +74,7 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <RechartsPieChart className="w-5 h-5" />
+          <LucidePieChart className="w-5 h-5" />
           Issue Severity Distribution
         </CardTitle>
       </CardHeader>

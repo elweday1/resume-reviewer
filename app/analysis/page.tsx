@@ -140,7 +140,7 @@ export default function AnalysisPage() {
       try {
         console.log("[v0] Starting PDF analysis with Gemini...")
         const isMocked = params.get("mocked") === "true"
-        const data = await getAnalysis({ file, mocked: false })
+        const data = await getAnalysis({ file, mocked: isMocked })
         setAnalysis(data.analysis)
         setShareToken(data.shareToken)
 

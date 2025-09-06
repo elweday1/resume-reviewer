@@ -34,29 +34,14 @@ export async function POST(request: NextRequest) {
 
     const { object: analysisData } = await generateObject({
       model: google("gemini-1.5-flash"),
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `${ANALYSIS_PROMPT}\n\nAnalyze the resume in the PDF file provided below:`,
-            },
-            {
-              type: "file",
-              data: fileUrl,
-              mimeType: "application/pdf",
-            },
-          ],
-        },
-      ],
+      prompt: `${ANALYSIS_PROMPT}\n\nAnalyze the resume in the PDF file provided. The PDF is available at: ${fileUrl}`,
       schema: ResumeAnalysisSchema,
       temperature: 0.3,
     })
 
     console.log("[v0] PDF analysis completed successfully with score:", analysisData.score)
 
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data: savedAnalysis, error: dbError } = await supabase
       .from("analyses")

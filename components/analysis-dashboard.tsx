@@ -22,7 +22,7 @@ import { OverviewCard } from './overview-card'
 import { QualityPillarsCard } from './quality-pillars-card'
 import { SectionPerformanceCard } from './section-performance-card'
 import { ErrorBoundary } from "@/components/error-boundary"
-import { SeverityDistributionChart } from "./severity-dist
+import { SeverityDistributionChart } from "./severity-dist"
 
 interface AnalysisDashboardProps {
   analysis: ResumeAnalysis

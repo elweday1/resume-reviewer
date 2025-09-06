@@ -6,8 +6,8 @@ import { useFilterStore } from '@/lib/stores/filters'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
 
 export function SectionPerformanceCard({ sections }: { sections: any[] }) {
-    const setSeverity = useFilterStore((s: any) => s.setSeverity)
-    const setSection = useFilterStore((s: any) => s.setSection)
+    const setSeverity = useFilterStore((s) => s.setSeverity)
+    const setSection = useFilterStore((s) => s.setSection)
 
     return (
         <Card>

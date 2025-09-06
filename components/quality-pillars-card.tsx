@@ -8,7 +8,7 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 import { useFilterStore } from '@/lib/stores/filters'
 
 export function QualityPillarsCard({ pillars }: { pillars: QualityPillar[] }) {
-    const setPillar = useFilterStore((s: any) => s.setPillar)
+    const setPillar = useFilterStore((s) => s.setPillar)
 
     if (!pillars || pillars.length === 0) {
         return (

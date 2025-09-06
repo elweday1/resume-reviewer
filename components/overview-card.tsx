@@ -7,8 +7,8 @@ import { Progress } from '@/components/ui/progress'
 import { useUiStore } from '@/lib/stores/ui'
 
 export function OverviewCard({ analysis }: { analysis: any }) {
-    const showRecruiter = useUiStore((s: any) => s.recruiterExpanded)
-    const toggleRecruiter = useUiStore((s: any) => s.toggleRecruiter)
+    const showRecruiter = useUiStore((s) => s.recruiterExpanded)
+    const toggleRecruiter = useUiStore((s) => s.toggleRecruiter)
 
     return (
         <Card>

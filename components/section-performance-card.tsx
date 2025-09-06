@@ -8,7 +8,6 @@ import { useMemo } from 'react'
 
 export function SectionPerformanceCard({ sections }: { sections: any[] }) {
     const setSeverity = useFilterStore((s) => s.setSeverity)
-    const setSection = useFilterStore((s) => s.setSection)
     const data = useMemo(() => sections.map((s) => ({
         name: s.sectionName,
         issues: s.lineByLineAudit.length,

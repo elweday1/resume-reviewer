@@ -6,20 +6,22 @@ import { useFilterStore } from '@/lib/stores/filters'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
 import { useMemo } from 'react'
 import { SEVERITY_DATA } from '@/lib/utils'
-import { SeverityLevels, SectionAnalysis } from '@/lib/schemas'
+import { SeverityLevels, SectionAnalysis, Issue } from '@/lib/schemas'
 
-export function SectionPerformanceCard({ sections }: { sections: SectionAnalysis[] }) {
+export function SectionPerformanceCard({ sections }: { sections: Array<SectionAnalysis & { lineByLineAudit: Issue[] }> }) {
     const setSeverity = useFilterStore((s) => s.setSeverity)
     const setSection = useFilterStore((s) => s.setSection)
-    const data = useMemo(() => sections.map((s) => ({
-        name: s.sectionName,
-        issues: s.lineByLineAudit.length,
-        score: s.sectionScore,
-        Critical: s.lineByLineAudit.filter((a) => a.severity === 'Critical').length,
-        High: s.lineByLineAudit.filter((a) => a.severity === 'High').length,
-        Medium: s.lineByLineAudit.filter((a) => a.severity === 'Medium').length,
-        Low: s.lineByLineAudit.filter((a) => a.severity === 'Low').length,
-    })), [sections])
+    const data = useMemo(() => sections.map((s) => {
+        return {
+            name: s.sectionName,
+            issues: s.lineByLineAudit.length,
+            score: s.sectionScore,
+            Critical: s.lineByLineAudit.filter((a) => a.severity === 'Critical').length,
+            High: s.lineByLineAudit.filter((a) => a.severity === 'High').length,
+            Medium: s.lineByLineAudit.filter((a) => a.severity === 'Medium').length,
+            Low: s.lineByLineAudit.filter((a) => a.severity === 'Low').length,
+        }
+    }), [sections])
     return (
         <Card>
             <CardHeader>

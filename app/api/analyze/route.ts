@@ -1,55 +1,27 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { generateObject } from "ai"
 import { google } from "@ai-sdk/google"
-import { ResumeAnalysisSchema, type ResumeAnalysis } from "@/lib/schemas"
+import { ANALYSIS_SYSTEM_PROMPT, ResumeAnalysisSchema, type ResumeAnalysis } from "@/lib/schemas"
 import { createClient } from "@/lib/supabase/server"
 import crypto from 'crypto'
 
 const MODEL_NAME = "gemini-2.0-flash"
 
-const ANALYSIS_PROMPT = `
-You are a career advisor. Your task is to review a user's resume.
 
-Please provide a constructive critique by checking for the following:
-
-1. Formatting and Readability
-Consistency: Is the formatting (spacing, bolding, italics) consistent throughout the document? 
-Clarity: Is the resume easy to read and skim, with a good balance of white space? 
-Order: Are headings listed in order of importance, and is the information within each section in reverse chronological order? 
-
-2. Language and Tone
-Action Verbs: Does each bullet point begin with a strong action verb? Avoid passive language. 
-Specificity: Is the language specific and fact-based rather than general or "flowery"? 
-Pronouns: Are personal pronouns (like "I" or "we") avoided? 
-
-3. Content and Impact
-Demonstrate Results: Does the resume quantify or qualify accomplishments to show results, rather than just listing duties? 
-Tailoring: Does the content reflect the skills and experiences an employer in the target industry would value? 
-Common Mistakes: Check for the top five resume mistakes:
-- Spelling and grammar errors 
-- Missing email and phone number 
-- Use of passive language 
-- Poor organization 
-- Failure to demonstrate results 
-
-4. What to Exclude
-Ensure the resume does not include: a picture, age, gender, slang, or a list of references. 
-`
-
-async function analyzeFile(pdfBase64: string): Promise<ResumeAnalysis> {
+async function analyzeFile(fileName: string, pdfBase64: string): Promise<ResumeAnalysis> {
   const { object } = await generateObject({
     model: google(MODEL_NAME),
     messages: [
       {
         role: "system" as const,
-        content: ANALYSIS_PROMPT
+        content: ANALYSIS_SYSTEM_PROMPT
       },
       {
         role: "user" as const,
         content: [
           {
             type: "text",
-            text: "Please analyze this resume PDF according to the instructions provided.",
+            text: `Please analyze this resume PDF "${fileName}" according to the instructions provided.`,
           },
           {
             type: "file",
@@ -108,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     const pdfBuffer = await pdfResponse.arrayBuffer()
     const pdfBase64 = Buffer.from(pdfBuffer).toString("base64")
-    const analysisData = await analyzeFile(pdfBase64)
+    const analysisData = await analyzeFile(filename, pdfBase64)
     console.log("[v0] PDF analysis completed successfully with score:", analysisData.score)
     const { savedAnalysis, dbError } = await uploadFile({ filename, analysisData, fileUrl })
 

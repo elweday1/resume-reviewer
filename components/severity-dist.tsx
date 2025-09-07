@@ -24,21 +24,11 @@ export function SeverityDistributionChart({ analysis, onSeverityClick }: { analy
   }
 
   const severityCounts = useMemo(() =>
-    Object.entries(analysis.sectionAnalysis
-      .reduce(
-        (counts, section) => {
-          section.lineByLineAudit.forEach(({ severity }) => {
-            counts[severity] = counts[severity] ? counts[severity] + 1 : 1
-          })
-          return counts
-        },
-        {} as Record<string, number>))
-      .map(([severity, count]) => ({
-        name: severity,
-        value: count,
-        color: SEVERITY_DATA[severity as SeverityLevel].color,
-      }))
-    , [analysis.sectionAnalysis])
+    Object.entries(Object.groupBy(analysis.lineByLineAudit, ({ severity }) => severity)).map(([name, issues]) => ({
+      name,
+      value: issues.length,
+      color: SEVERITY_DATA[name as SeverityLevel].color,
+    })), [analysis.sectionAnalysis])
 
   const totalIssues = severityCounts.reduce((sum, item) => sum + item.value, 0)
 

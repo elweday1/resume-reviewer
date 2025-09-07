@@ -12,21 +12,43 @@ import { ErrorBoundary } from "@/components/error-boundary"
 
 const MOCK_ANALYSIS: ResumeAnalysis = {
   score: 85,
+  lineByLineAudit: [
+    {
+      element: "Led a team of 5 engineers to develop a new feature.",
+      reasoning: "This is a strong accomplishment that demonstrates leadership.",
+      pillar: "Completeness & Professionalism",
+      originalText: "Worked on various projects.",
+      severity: "Medium",
+      section: "Work Experience",
+      critique: "Be more specific about your role and achievements.",
+      suggestedRevision: "Led a team of 5 engineers to develop a new feature that increased user engagement by 20%.",
+    },
+    {
+      element: "Graduated with honors.",
+      section: "Education",
+      reasoning: "This is a positive highlight that should be retained.",
+      pillar: "Content Impact & Persuasion",
+      originalText: "Bachelor of Science in Computer Science, XYZ University, 2018",
+      severity: "Low",
+      critique: "Add relevant coursework or honors if applicable.",
+      suggestedRevision: "Include any relevant courses or academic achievements.",
+    },
+  ],
   qualityPillarsAnalysis: [
     {
-      pillar: "Career Narrative & Cohesion",
+      pillar: "Strategic Alignment & Targeting",
       score: 90,
       description: "Measures the relevance and clarity of the resume content.",
       findings: "Your resume content is clear and relevant to the job description.",
     },
     {
-      pillar: "Visual Typography & Formatting",
+      pillar: "Technical Compliance & Readability",
       score: 80,
       description: "Assesses the visual layout and organization of the resume.",
       findings: "Consider using bullet points for better readability in some sections.",
     },
     {
-      pillar: "Language & Prose",
+      pillar: "Technical Compliance & Readability",
       score: 75,
       description: "Evaluates the use of industry-specific keywords.",
       findings: "Incorporate more keywords from the job description to pass ATS scans.",
@@ -36,33 +58,11 @@ const MOCK_ANALYSIS: ResumeAnalysis = {
     {
       sectionName: "Work Experience",
       sectionScore: 80,
-      lineByLineAudit: [
-        {
-          element: "Led a team of 5 engineers to develop a new feature.",
-          reasoning: "This is a strong accomplishment that demonstrates leadership.",
-          pillar: "Career Narrative & Cohesion",
-          originalText: "Worked on various projects.",
-          severity: "Medium",
-          critique: "Be more specific about your role and achievements.",
-          suggestedRevision: "Led a team of 5 engineers to develop a new feature that increased user engagement by 20%.",
-        },
-      ],
       comments: "Good detail, but could use more quantifiable results."
     },
     {
       sectionName: "Education",
       sectionScore: 90,
-      lineByLineAudit: [
-        {
-          element: "Graduated with honors.",
-          reasoning: "This is a positive highlight that should be retained.",
-          pillar: "Career Narrative & Cohesion",
-          originalText: "Bachelor of Science in Computer Science, XYZ University, 2018",
-          severity: "Low",
-          critique: "Add relevant coursework or honors if applicable.",
-          suggestedRevision: "Include any relevant courses or academic achievements.",
-        },
-      ],
       comments: "Well-presented, minor additions could enhance."
     },
   ],

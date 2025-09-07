@@ -2,12 +2,12 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { LineByLineAudit } from '@/lib/schemas'
+import type { Issue, SeverityLevel } from '@/lib/schemas'
 import { SEVERITY_DATA } from '@/lib/utils'
 import { useHighlightStore } from '@/lib/stores/highlight'
 
 
-const SeverityBadge = ({ severity }: { severity: LineByLineAudit["severity"] }) => {
+const SeverityBadge = ({ severity }: { severity: SeverityLevel }) => {
     const { label, Icon, variant } = SEVERITY_DATA[severity]
     return (
         <Badge variant={variant} className="flex items-center gap-1">
@@ -17,7 +17,7 @@ const SeverityBadge = ({ severity }: { severity: LineByLineAudit["severity"] }) 
     )
 }
 
-export function IssuesList({ issues }: { issues: LineByLineAudit[] }) {
+export function IssuesList({ issues }: { issues: Issue[] }) {
     const setHilightedText = useHighlightStore(s => s.setHilightedText)
     return (
         <div className="space-y-3 max-h-96 overflow-auto">

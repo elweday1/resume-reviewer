@@ -12,7 +12,7 @@ import {
   Eye,
   LucidePieChart,
 } from "lucide-react"
-import type { ResumeAnalysis, QualityPillar, SectionAnalysis, LineByLineAudit } from "@/lib/schemas"
+import type { ResumeAnalysis, QualityPillar, SectionAnalysis, Issue } from "@/lib/schemas"
 import { useMemo } from "react"
 import { useFilterStore } from '@/lib/stores/filters'
 import { IssuesList } from './issues-list'
@@ -22,7 +22,6 @@ import { QualityPillarsCard } from './quality-pillars-card'
 import { SectionPerformanceCard } from './section-performance-card'
 import { SeverityDistributionChart } from "./severity-dist"
 
-type Issue = LineByLineAudit & { sectionName?: string }
 
 interface AnalysisDashboardProps {
   analysis: ResumeAnalysis
@@ -85,7 +84,7 @@ function SectionAnalysisCard({ section, onSectionClick }: { section: SectionAnal
               Summary
             </h4>
             <p className="text-sm text-muted-foreground">{section.comments}</p>
-            <div className="mt-2 text-xs text-muted-foreground">Issues found: {section.lineByLineAudit.length}</div>
+            {/* <div className="mt-2 text-xs text-muted-foreground">Issues found: {section.lineByLineAudit.length}</div> */}
           </div>
         </CardContent>
       </details>
@@ -101,15 +100,20 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
   const activeSectionFilter = useFilterStore((s) => s.section)
 
   const filteredIssues: Issue[] = useMemo(() => {
-    return analysis?.sectionAnalysis?.map(({ lineByLineAudit, sectionName }) =>
-      lineByLineAudit?.map((a => ({ ...a, sectionName })))
-    ).flat().filter((issue) => {
+    return analysis?.lineByLineAudit?.filter((issue) => {
       if (activePillarFilter && issue.pillar !== activePillarFilter) return false
       if (activeSeverityFilter && issue.severity !== activeSeverityFilter) return false
-      if (activeSectionFilter && issue.sectionName !== activeSectionFilter) return false
+      if (activeSectionFilter && issue.section !== activeSectionFilter) return false
       return true
     })
   }, [analysis, activePillarFilter, activeSeverityFilter, activeSectionFilter])
+
+  const sectionAnalysis = useMemo(() => {
+    const auditsGroupedBySelection = Object.groupBy(analysis.lineByLineAudit, ({ section }) => section)
+    return analysis.sectionAnalysis.map((sec) => {
+      return { ...sec, lineByLineAudit: auditsGroupedBySelection[sec.sectionName] ?? [] }
+    })
+  }, [analysis.sectionAnalysis, analysis.lineByLineAudit])
 
 
   if (!analysis) {
@@ -135,7 +139,7 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
       </div>
 
       <div className="grid  gap-6">
-        <SectionPerformanceCard sections={analysis.sectionAnalysis || []} />
+        <SectionPerformanceCard sections={sectionAnalysis || []} />
 
         <Card>
           <CardHeader>

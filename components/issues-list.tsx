@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { LineByLineAudit } from '@/lib/schemas'
 import { SEVERITY_DATA } from '@/lib/utils'
+import { useHighlightStore } from '@/lib/stores/highlight'
 
 
 const SeverityBadge = ({ severity }: { severity: LineByLineAudit["severity"] }) => {
@@ -17,6 +18,7 @@ const SeverityBadge = ({ severity }: { severity: LineByLineAudit["severity"] }) 
 }
 
 export function IssuesList({ issues }: { issues: LineByLineAudit[] }) {
+    const setHilightedText = useHighlightStore(s => s.setHilightedText)
     return (
         <div className="space-y-3 max-h-96 overflow-auto">
             {issues.length === 0 ? (
@@ -39,8 +41,10 @@ export function IssuesList({ issues }: { issues: LineByLineAudit[] }) {
 
                                 <div className="space-y-3">
                                     <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-1">Original Text:</p>
-                                        <div className="bg-red-50 border border-red-200 rounded p-2">
+                                        <p className="text-xs font-medium text-muted-foreground mb-1" >Original Text:</p>
+                                        <div onClick={
+                                            () => setHilightedText(audit.originalText)
+                                        } className="bg-red-50 border border-red-200 rounded p-2">
                                             <p className="text-sm font-mono">{audit.originalText}</p>
                                         </div>
                                     </div>

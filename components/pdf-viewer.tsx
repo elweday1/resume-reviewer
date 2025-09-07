@@ -6,11 +6,50 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { useHighlightStore } from "@/lib/stores/highlight"
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css'
+
+function findLargestWindowFromIndexed(indexedItems: [number, string][], threshold: number) {
+  if (indexedItems.length === 0) {
+    return { length: 0, startIndex: -1 };
+  }
+
+  let maxStart = indexedItems[0][0];
+  let maxLength = 1;
+
+  let currentStart = indexedItems[0][0];
+
+  for (let i = 1; i < indexedItems.length; i++) {
+    const prevIndex = indexedItems[i - 1][0];
+    const currentIndex = indexedItems[i][0];
+
+    // Check if the gap between original indices is too large
+    if (currentIndex - prevIndex > threshold) {
+      // If so, the new window starts at the current item
+      currentStart = currentIndex;
+    }
+
+    // Calculate the length of the current window based on original indices
+    const currentLength = currentIndex - currentStart + 1;
+    if (currentLength > maxLength) {
+      maxLength = currentLength;
+      maxStart = currentStart;
+    }
+  }
+
+  return {
+    length: maxLength,
+    startIndex: maxStart,
+  };
+}
+
+
 
 const PDFDocument = React.lazy(() =>
   import("react-pdf").then((module) => {
     // Set up PDF.js worker
-    module.pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${module.pdfjs.version}/build/pdf.worker.min.mjs`
+    module.pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${module.pdfjs.version}/build/pdf.worker.js`
     return { default: module.Document }
   }),
 )
@@ -30,6 +69,30 @@ export function PDFViewer({ fileUrl, className }: PDFViewerProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [isMounted, setIsMounted] = useState(false)
+
+  const [pageContent, setPageContent] = useState<{ items: { str: string }[] }>({ items: [] });
+  const highlighted = useHighlightStore((s) => s.highlightedText)
+
+  const textRenderer = useCallback(
+    (textItem: { str: string, itemIndex: number },) => {
+      const matches = pageContent.items.map((item, subtextIndex) => {
+        const subtext = item.str;
+        if (subtext && subtext !== " " && highlighted.includes(subtext))
+          return [subtextIndex, subtext] as const;
+      }).filter(
+        (item): item is [number, string] => !!item
+      )
+      const { length, startIndex } = findLargestWindowFromIndexed(matches, 20)
+      let newText = textItem.str;
+      matches.forEach(([matchIdx, matchStr]) => {
+        if ((startIndex <= matchIdx) && (matchIdx <= startIndex + length) && (matchIdx === textItem.itemIndex)) {
+          newText = newText.replace(matchStr, (value) => `<mark>${value}</mark>`)
+        }
+      })
+      return newText
+    },
+    [highlighted, pageContent]
+  );
 
   useEffect(() => {
     setIsMounted(true)
@@ -151,11 +214,20 @@ export function PDFViewer({ fileUrl, className }: PDFViewerProps) {
                         }
                       >
                         <PDFPage
+                          customTextRenderer={textRenderer}
                           pageNumber={pageNumber}
                           scale={scale}
                           rotate={rotation}
-                          renderTextLayer={false}
-                          renderAnnotationLayer={false}
+                          onLoadSuccess={(page) => {
+                            page.getTextContent({
+                              includeMarkedContent: true,
+                              disableNormalization: true
+                            }).then((content) => {
+                              setPageContent(content)
+                            })
+                          }}
+                          renderTextLayer={true}
+                          renderAnnotationLayer={true}
                           className="shadow-lg"
                         />
                       </PDFDocument>

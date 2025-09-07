@@ -94,13 +94,11 @@ function SectionAnalysisCard({ section, onSectionClick }: { section: SectionAnal
 }
 
 export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
-  const setActivePillarFilter = useFilterStore((s) => s.setPillar)
   const setActiveSeverityFilter = useFilterStore((s) => s.setSeverity)
-  const setActiveSectionFilter = useFilterStore((s) => s.setSection)
   const clearAllFilters = useFilterStore((s) => s.clearAll)
-  const [activePillarFilter, activeSeverityFilter, activeSectionFilter] = useFilterStore((s) => [
-    s.pillar, s.severity, s.section
-  ])
+  const activePillarFilter = useFilterStore((s) => s.pillar)
+  const activeSeverityFilter = useFilterStore((s) => s.severity)
+  const activeSectionFilter = useFilterStore((s) => s.section)
 
   const filteredIssues: Issue[] = useMemo(() => {
     return analysis?.sectionAnalysis?.map(({ lineByLineAudit, sectionName }) =>
@@ -131,39 +129,15 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
   return (
     <div className="space-y-6">
       <OverviewCard analysis={analysis} />
-      <div className="flex items-center gap-2">
-        {activePillarFilter && (
-          <Badge className="flex items-center gap-2">
-            {activePillarFilter}
-            <button onClick={() => setActivePillarFilter(null)} className="ml-2 text-xs">×</button>
-          </Badge>
-        )}
-        {activeSeverityFilter && (
-          <Badge className="flex items-center gap-2">
-            {activeSeverityFilter}
-            <button onClick={() => setActiveSeverityFilter(null)} className="ml-2 text-xs">×</button>
-          </Badge>
-        )}
-        {activeSectionFilter && (
-          <Badge className="flex items-center gap-2">
-            {activeSectionFilter}
-            <button onClick={() => setActiveSectionFilter(null)} className="ml-2 text-xs">×</button>
-          </Badge>
-        )}
-        {(activePillarFilter || activeSeverityFilter || activeSectionFilter) && (
-          <Button variant="ghost" size="sm" onClick={clearAllFilters}>Clear all</Button>
-        )}
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <QualityPillarsCard pillars={analysis.qualityPillarsAnalysis || []} />
-        <SectionPerformanceCard sections={analysis.sectionAnalysis || []} />
+        <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} />
+      <div className="grid  gap-6">
+        <SectionPerformanceCard sections={analysis.sectionAnalysis || []} />
 
-        <Card className="col-span-2">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2"><LucidePieChart className="w-5 h-5" /> Issues</span>

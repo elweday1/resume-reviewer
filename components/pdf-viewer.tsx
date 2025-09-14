@@ -90,9 +90,6 @@ export function PDFViewer({ blob, className }: PDFViewerProps) {
   if (!isMounted) {
     return (
       <Card className={cn("w-full", className)}>
-        <CardHeader>
-          <CardTitle>PDF Viewer</CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-96">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -103,74 +100,25 @@ export function PDFViewer({ blob, className }: PDFViewerProps) {
   }
 
   return (
-    <Card className={cn("w-full", className)}>
-      <CardHeader>
+    <Card className={cn("w-full p-1 gap-1  aspect-[210/297]", className)}>
+      <CardHeader className="p-1">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">PDF Viewer</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={downloadPDF}>
-              <Download className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={rotate}>
-              <RotateCw className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={zoomOut} disabled={scale <= 0.5}>
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <span className="text-sm text-muted-foreground min-w-[60px] text-center">{Math.round(scale * 100)}%</span>
-            <Button variant="outline" size="sm" onClick={zoomIn} disabled={scale >= 3.0}>
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {error ? (
-          <div className="flex items-center justify-center h-96 text-red-600">
-            <p>{error}</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <ErrorBoundary name="PDF Document">
-              <div className="border rounded-lg overflow-hidden bg-gray-50">
-                <div
-                  className="flex justify-center p-4 overflow-auto max-h-[600px] cursor-crosshair"
-                  onClick={handlePageClick}
-                >
-                  <React.Suspense
-                    fallback={
-                      <div className="flex items-center justify-center h-96">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      </div>
-                    }
-                  >
-                    <ErrorBoundary name="PDF Renderer">
-                      <PDFDocument
-                        file={blob}
-                        onLoadSuccess={onDocumentLoadSuccess}
-                        onLoadError={onDocumentLoadError}
-                        loading={
-                          <div className="flex items-center justify-center h-96">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                          </div>
-                        }
-                      >
-                        <PDFPage
-                          pageNumber={pageNumber}
-                          scale={scale}
-                          rotate={rotation}
-                          renderTextLayer={true}
-                          renderAnnotationLayer={false}
-                          className="shadow-lg"
-                        />
-                      </PDFDocument>
-                    </ErrorBoundary>
-                  </React.Suspense>
-                </div>
-              </div>
-            </ErrorBoundary>
-
-            {/* Navigation Controls */}
+          <div className="flex items-center w-full justify-between">
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" onClick={downloadPDF}>
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={rotate}>
+                <RotateCw className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={zoomOut} disabled={scale <= 0.5}>
+                <ZoomOut className="w-4 h-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground min-w-[60px] text-center">{Math.round(scale * 100)}%</span>
+              <Button variant="outline" size="sm" onClick={zoomIn} disabled={scale >= 3.0}>
+                <ZoomIn className="w-4 h-4" />
+              </Button>
+            </div>
             {numPages > 0 && (
               <div className="flex items-center justify-between">
                 <Button
@@ -180,7 +128,6 @@ export function PDFViewer({ blob, className }: PDFViewerProps) {
                   className="flex items-center gap-2 bg-transparent"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Previous
                 </Button>
 
                 <div className="flex items-center gap-2">
@@ -195,14 +142,60 @@ export function PDFViewer({ blob, className }: PDFViewerProps) {
                   disabled={pageNumber >= numPages}
                   className="flex items-center gap-2"
                 >
-                  Next
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
             )}
+
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-2">
+        {error ? (
+          <div className="flex items-center justify-center h-96 text-red-600">
+            <p>{error}</p>
+          </div>
+        ) : (
+          <div className="">
+            <div className="border rounded-lg overflow-hidden bg-gray-50">
+              <div
+                className="flex justify-center overflow-auto max-h-[600px] cursor-crosshair"
+                onClick={handlePageClick}
+              >
+                <React.Suspense
+                  fallback={
+                    <div className="flex items-center justify-center h-96">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  }
+                >
+                  <ErrorBoundary name="PDF Renderer">
+                    <PDFDocument
+                      file={blob}
+                      onLoadSuccess={onDocumentLoadSuccess}
+                      onLoadError={onDocumentLoadError}
+                      loading={
+                        <div className="flex items-center justify-center h-96">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        </div>
+                      }
+                    >
+                      <PDFPage
+                        pageNumber={pageNumber}
+                        scale={scale}
+                        rotate={rotation}
+                        renderTextLayer={true}
+                        renderAnnotationLayer={false}
+                        className="shadow-lg"
+                      />
+                    </PDFDocument>
+                  </ErrorBoundary>
+                </React.Suspense>
+              </div>
+            </div>
           </div>
         )}
       </CardContent>
-    </Card>
+    </Card >
   )
 }

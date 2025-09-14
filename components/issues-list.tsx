@@ -51,12 +51,16 @@ export function IssuesList({ issues }: { issues: Issue[] }) {
 
     function fixIssue(auditIndex: number) {
         const audit = issues[auditIndex];
-        const updated = replaceText(mainContent, audit.originalText!, audit.suggestedFix!)
+        if (!prevContentRef.current) {
+            return;
+        }
+        const updated = replaceText(prevContentRef.current, audit.originalText!, audit.suggestedFix!)
         if (updated !== null) {
             setMainContent(updated)
             prevContentRef.current = updated
+            setFixedAudits((audits) => ({ ...audits, [auditIndex]: true }))
+
         }
-        setFixedAudits((audits) => ({ ...audits, [auditIndex]: true }))
     }
 
     useEffect(() => {

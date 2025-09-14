@@ -56,12 +56,13 @@ const PDFDocument = React.lazy(() =>
 
 const PDFPage = React.lazy(() => import("react-pdf").then((module) => ({ default: module.Page })))
 
-interface PDFViewerProps {
-  fileUrl: string
+type PDFViewerProps = {
+  file: string | Blob
   className?: string
 }
 
-export function PDFViewer({ fileUrl, className }: PDFViewerProps) {
+
+export function PDFViewer({ file, className }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [scale, setScale] = useState<number>(1.0)
@@ -140,7 +141,7 @@ export function PDFViewer({ fileUrl, className }: PDFViewerProps) {
 
   const downloadPDF = () => {
     const link = document.createElement("a")
-    link.href = fileUrl
+    link.href = file
     link.download = "resume.pdf"
     link.click()
   }
@@ -204,7 +205,7 @@ export function PDFViewer({ fileUrl, className }: PDFViewerProps) {
                   >
                     <ErrorBoundary name="PDF Renderer">
                       <PDFDocument
-                        file={fileUrl}
+                        file={file}
                         onLoadSuccess={onDocumentLoadSuccess}
                         onLoadError={onDocumentLoadError}
                         loading={

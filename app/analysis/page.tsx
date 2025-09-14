@@ -9,6 +9,8 @@ import type { ResumeAnalysis } from "@/lib/schemas"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { blobAtom } from "@/lib/stores/typst"
+import { useAtomValue } from "jotai"
 
 const MOCK_ANALYSIS: ResumeAnalysis = {
   score: 85,
@@ -123,6 +125,7 @@ export default function AnalysisPage() {
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [shareToken, setShareToken] = useState<string | null>(null)
+  const blob = useAtomValue(blobAtom)
   const router = useRouter()
 
   useEffect(() => {
@@ -139,7 +142,7 @@ export default function AnalysisPage() {
 
       try {
         console.log("[v0] Starting PDF analysis with Gemini...")
-        const isMocked = false
+        const isMocked = true
         const data = await getAnalysis({ file, mocked: isMocked })
         setAnalysis(data.analysis)
         setShareToken(data.shareToken)
@@ -182,10 +185,6 @@ export default function AnalysisPage() {
     }
   }
 
-  const handleSectionClick = (pageNumber: number, coordinates: { x: number; y: number }) => {
-    console.log(`[v0] PDF section clicked - Page: ${pageNumber}, Coordinates:`, coordinates)
-    // Implement section highlighting and reference functionality
-  }
 
   if (!uploadedFile) {
     return (
@@ -245,7 +244,7 @@ export default function AnalysisPage() {
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
               <div className="xl:col-span-2">
                 <ErrorBoundary name="PDF Viewer">
-                  <PDFViewer fileUrl={uploadedFile!.blobUrl} className="sticky top-8" />
+                  <PDFViewer file={blob!} className="sticky top-8" />
                 </ErrorBoundary>
               </div>
 

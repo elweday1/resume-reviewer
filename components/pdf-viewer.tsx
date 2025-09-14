@@ -1,50 +1,14 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from "react"
+import React, { useState, useCallback, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, Download } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { useHighlightStore } from "@/lib/stores/highlight"
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css'
-
-function findLargestWindowFromIndexed(indexedItems: [number, string][], threshold: number) {
-  if (indexedItems.length === 0) {
-    return { length: 0, startIndex: -1 };
-  }
-
-  let maxStart = indexedItems[0][0];
-  let maxLength = 1;
-
-  let currentStart = indexedItems[0][0];
-
-  for (let i = 1; i < indexedItems.length; i++) {
-    const prevIndex = indexedItems[i - 1][0];
-    const currentIndex = indexedItems[i][0];
-
-    // Check if the gap between original indices is too large
-    if (currentIndex - prevIndex > threshold) {
-      // If so, the new window starts at the current item
-      currentStart = currentIndex;
-    }
-
-    // Calculate the length of the current window based on original indices
-    const currentLength = currentIndex - currentStart + 1;
-    if (currentLength > maxLength) {
-      maxLength = currentLength;
-      maxStart = currentStart;
-    }
-  }
-
-  return {
-    length: maxLength,
-    startIndex: maxStart,
-  };
-}
-
-
+import { generatePDFBlob } from "@/lib/stores/typst"
 
 const PDFDocument = React.lazy(() =>
   import("react-pdf").then((module) => {
@@ -57,43 +21,26 @@ const PDFDocument = React.lazy(() =>
 const PDFPage = React.lazy(() => import("react-pdf").then((module) => ({ default: module.Page })))
 
 type PDFViewerProps = {
-  file: string | Blob
-  className?: string
+  file: string;
+  typst: true;
+  className?: string;
 }
 
-
-export function PDFViewer({ file, className }: PDFViewerProps) {
+export function PDFViewer({ file, className, typst }: PDFViewerProps) {
   const [numPages, setNumPages] = useState<number>(0)
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [scale, setScale] = useState<number>(1.0)
   const [rotation, setRotation] = useState<number>(0)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const [isMounted, setIsMounted] = useState(false)
+  const [isMounted, setIsMounted] = useState(false);
+  const [blob, setBlob] = useState<Blob>();
 
-  const [pageContent, setPageContent] = useState<{ items: { str: string }[] }>({ items: [] });
-  const highlighted = useHighlightStore((s) => s.highlightedText)
-
-  const textRenderer = useCallback(
-    (textItem: { str: string, itemIndex: number },) => {
-      const matches = pageContent.items.map((item, subtextIndex) => {
-        const subtext = item.str;
-        if (subtext && subtext !== " " && highlighted.includes(subtext))
-          return [subtextIndex, subtext] as const;
-      }).filter(
-        (item): item is [number, string] => !!item
-      )
-      const { length, startIndex } = findLargestWindowFromIndexed(matches, 20)
-      let newText = textItem.str;
-      matches.forEach(([matchIdx, matchStr]) => {
-        if ((startIndex <= matchIdx) && (matchIdx <= startIndex + length) && (matchIdx === textItem.itemIndex)) {
-          newText = newText.replace(matchStr, (value) => `<mark>${value}</mark>`)
-        }
-      })
-      return newText
-    },
-    [highlighted, pageContent]
-  );
+  useEffect(() => {
+    generatePDFBlob(file).then((blob) => {
+      setBlob(blob)
+    });
+  }, [file])
 
   useEffect(() => {
     setIsMounted(true)
@@ -205,7 +152,7 @@ export function PDFViewer({ file, className }: PDFViewerProps) {
                   >
                     <ErrorBoundary name="PDF Renderer">
                       <PDFDocument
-                        file={file}
+                        file={blob}
                         onLoadSuccess={onDocumentLoadSuccess}
                         onLoadError={onDocumentLoadError}
                         loading={
@@ -215,20 +162,11 @@ export function PDFViewer({ file, className }: PDFViewerProps) {
                         }
                       >
                         <PDFPage
-                          customTextRenderer={textRenderer}
                           pageNumber={pageNumber}
                           scale={scale}
                           rotate={rotation}
-                          onLoadSuccess={(page) => {
-                            page.getTextContent({
-                              includeMarkedContent: true,
-                              disableNormalization: true
-                            }).then((content) => {
-                              setPageContent(content)
-                            })
-                          }}
                           renderTextLayer={true}
-                          renderAnnotationLayer={true}
+                          renderAnnotationLayer={false}
                           className="shadow-lg"
                         />
                       </PDFDocument>

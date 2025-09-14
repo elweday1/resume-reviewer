@@ -9,7 +9,152 @@ Your task is to provide a critical and comprehensive evaluation of a user-provid
 Your analysis must be rigorous, actionable, and grounded in established principles of resume excellence.
 
 Structure your evaluation using the following four pillars.
-For each pillar, provide a detailed assessment, identifying specific strengths and weaknesses with direct examples from the resume.`
+For each pillar, provide a detailed assessment, identifying specific strengths and weaknesses with direct examples from the resume.
+
+You will also return a typst source file that matches the resume, it should be a correct typst syntax, use the reference provided.
+Also you should use Modern Resume Package.
+
+example:
+#import "@preview/modern-cv:0.9.0": *
+#show: resume.with(
+  author: (
+    firstname: "John",
+    lastname: "Smith",
+    email: "js@example.com",
+    homepage: "https://example.com",
+    phone: "(+1) 111-111-1111",
+    github: "DeveloperPaul123",
+    twitter: "typstapp",
+    scholar: "",
+    orcid: "0000-0000-0000-000X",
+    birth: "January 1, 1990",
+    linkedin: "Example",
+    address: "111 Example St. Example City, EX 11111",
+    positions: (
+      "Software Engineer",
+      "Software Architect",
+      "Developer",
+    ),
+    custom: (
+      (
+        text: "Youtube Channel",
+        icon: "youtube",
+        link: "https://example.com",
+      ),
+    ),
+  ),
+  keywords: ("Engineer", "Architect"),
+  description: "John complete resume",
+  profile-picture: image("profile.png"),
+  date: datetime.today().display(),
+  language: "en",
+  colored-headers: true,
+  show-footer: false,
+  show-address-icon: true,
+  paper-size: "us-letter",
+)
+
+= Experience
+
+#resume-entry(
+  title: "Senior Software Engineer",
+  location: "Example City, EX",
+  date: "2019 - Present",
+  description: "Example, Inc.",
+  title-link: "https://github.com/DeveloperPaul123",
+)
+
+#resume-item[
+  - #lorem(20)
+  - #lorem(15)
+  - #lorem(25)
+]
+
+#resume-entry(
+  title: "Software Engineer",
+  location: "Example City, EX",
+  date: "2011 - 2019",
+  description: "Previous Company, Inc.",
+)
+
+#resume-item[
+  // content doesn't have to be bullet points
+  #lorem(72)
+]
+
+#resume-entry(title: "Intern", location: "Example City, EX")
+
+#resume-item[
+  - #lorem(20)
+  - #lorem(15)
+  - #lorem(25)
+]
+
+= Projects
+
+#resume-entry(
+  title: "Thread Pool C++ Library",
+  location: [#github-link("DeveloperPaul123/thread-pool")],
+  date: "May 2021 - Present",
+  description: "Designer/Developer",
+)
+
+#resume-item[
+  - Designed and implemented a thread pool library in C++ using the latest C++20 and C++23 features.
+  - Wrote extensive documentation and unit tests for the library and published it on Github.
+]
+
+#resume-entry(
+  title: "Event Bus C++ Library",
+  location: github-link("DeveloperPaul123/eventbus"),
+  date: "Sep. 2019 - Present",
+  description: "Designer/Developer",
+)
+
+#resume-item[
+  - Designed and implemented an event bus library using C++17.
+  - Wrote detailed documentation and unit tests for the library and published it on Github.
+]
+
+= Skills
+
+#resume-skill-item(
+  "Programming Languages",
+  (
+    strong("C++"),
+    strong("Python"),
+    "Rust",
+    "Java",
+    "C#",
+    "JavaScript",
+    "TypeScript",
+  ),
+)
+#resume-skill-item("Spoken Languages", (strong("English"), "Spanish"))
+#resume-skill-item(
+  "Programs",
+  (
+    strong("Excel"),
+    "Word",
+    "Powerpoint",
+    "Visual Studio",
+  ),
+)
+
+= Education
+
+#resume-entry(
+  title: "Example University",
+  location: "Example City, EX",
+  date: "August 2014 - May 2019",
+  description: "B.S. in Computer Science",
+)
+
+#resume-item[
+  - #lorem(20)
+  - #lorem(15)
+  - #lorem(25)
+]`
 
 const Pillar = z.union([
   z.literal("Strategic Alignment & Targeting").describe(`
@@ -78,9 +223,12 @@ export const IssueSchema = z.object({
   element: z
     .string()
     .describe("The specific resume element being critiqued (e.g., 'Contact Information', 'Job Title')"),
-  originalText: z.string().describe("The exact text from the resume being analyzed"),
+  originalText: z
+    .string()
+    .optional()
+    .describe(`The exact text that needs modification, it should be taken from "resumeTypstSource", it shouldnt contain any typst text, but the text inside, do not do any parsing, just take the text`),
   critique: z.string().describe("Detailed critique of why this element is problematic"),
-  suggestedRevision: z.string().describe("Specific suggestion for how to improve this element"),
+  suggestedFix: z.string().optional().describe("Specific suggestion for how to improve the selected element, it should contain the modified text"),
   reasoning: z.string().describe("Explanation of why the suggested revision is better"),
   severity: z.enum(SeverityLevels).describe("Severity level of the issue"),
   section: z.string().describe("The specific resume where this element is (e.g., 'Header', 'Education')"),
@@ -114,6 +262,9 @@ export const RecruiterGutCheckSchema = z.object({
 })
 
 export const ResumeAnalysisSchema = z.object({
+  resumeTypstSource: z.string().describe(
+    "Typst source representing the analyzed resume. Contains the full original document with the same format so downstream editors or renderers can reconstruct or modify the resume."
+  ),
   score: z
     .number()
     .min(0)
@@ -130,6 +281,18 @@ export const ResumeAnalysisSchema = z.object({
     .describe("Detailed line-by-line critique of elements in the entirety of the resume"),
 
 })
+// .superRefine(({ lineByLineAudit, resumeTypstSource }, ctx) => {
+//   lineByLineAudit.forEach(({ originalText }, auditIndex) => {
+//     if (originalText && !resumeTypstSource.includes(originalText)) {
+//       ctx.addIssue({
+//         code: "custom",
+//         message: `"${originalText}" was not part of the typstSource`,
+//         path: ["lineByLineAudit", auditIndex, "originalText"],
+//         fatal: false,
+//       });
+//     }
+//   })
+// })
 
 export const UploadedResumeSchema = z.object({
   id: z.string(),

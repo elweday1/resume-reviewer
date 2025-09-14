@@ -2,15 +2,36 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import type { Issue, SeverityLevel } from '@/lib/schemas'
 import { SEVERITY_DATA } from '@/lib/utils'
-import { useHighlightStore } from '@/lib/stores/highlight'
+import { mainContentAtom } from '@/lib/stores/typst'
+import { useSetAtom, useAtomValue } from 'jotai'
+import { useEffect, useRef, useState } from 'react'
 
+function highlightText(originalFile: string, text: string) {
+    const start = originalFile.indexOf(text)
+    if (start === -1) {
+        return
+    }
+    const end = start + text.length
+    const originalText = originalFile.slice(start, end)
+    const wrapped = `#highlight[${originalText}]`
+    return originalFile.slice(0, start) + wrapped + originalFile.slice(end)
+
+}
+
+function replaceText(originalFile: string, target: string, replacement: string) {
+    const start = originalFile.indexOf(target)
+    if (start === -1) return null
+    const end = start + target.length
+    return originalFile.slice(0, start) + replacement + originalFile.slice(end)
+}
 
 const SeverityBadge = ({ severity }: { severity: SeverityLevel }) => {
     const { label, Icon, variant } = SEVERITY_DATA[severity]
     return (
-        <Badge variant={variant} className="flex items-center gap-1">
+        <Badge variant={variant as any} className="flex items-center gap-1">
             <Icon className="w-3 h-3" />
             {label}
         </Badge>
@@ -18,14 +39,52 @@ const SeverityBadge = ({ severity }: { severity: SeverityLevel }) => {
 }
 
 export function IssuesList({ issues }: { issues: Issue[] }) {
-    const setHilightedText = useHighlightStore(s => s.setHilightedText)
+    const setMainContent = useSetAtom(mainContentAtom)
+    const mainContent = useAtomValue(mainContentAtom)
+    const [highlightedAudit, setHighlightedAudit] = useState<number | null>(null);
+    const prevContentRef = useRef<string | null>(null);
+    const [fixedAudits, setFixedAudits] = useState<Record<number, boolean>>({})
+
+    useEffect(() => {
+        prevContentRef.current = mainContent;
+    }, [])
+
+    function fixIssue(auditIndex: number) {
+        const audit = issues[auditIndex];
+        const updated = replaceText(mainContent, audit.originalText!, audit.suggestedFix!)
+        if (updated !== null) {
+            setMainContent(updated)
+            prevContentRef.current = updated
+        }
+        setFixedAudits((audits) => ({ ...audits, [auditIndex]: true }))
+    }
+
+    useEffect(() => {
+        console.log("changed highlight to ", highlightedAudit)
+
+        if (!highlightedAudit && prevContentRef.current) {
+            setMainContent(prevContentRef.current)
+        }
+        if (highlightedAudit && issues[highlightedAudit].originalText) {
+            const highlightedText = highlightText(mainContent, issues[highlightedAudit].originalText);
+            if (highlightedText) {
+                prevContentRef.current = mainContent;
+                setMainContent(highlightedText)
+            }
+        }
+    }, [highlightedAudit])
     return (
         <div className="space-y-3 max-h-96 overflow-auto">
             {issues.length === 0 ? (
                 <p className="text-muted-foreground">No issues match the current filters.</p>
             ) : (
                 issues.map((audit, idx) => (
-                    <Card className="mb-4">
+                    <Card
+                        key={`issue-${idx}-${audit.element.slice(0, 20)}`}
+                        className="mb-4"
+                        onMouseEnter={() => { setHighlightedAudit(idx) }}
+                        onMouseLeave={() => { setHighlightedAudit(null) }}
+                    >
                         <CardContent className="p-4">
                             <div className="space-y-3">
                                 <div className="flex items-start justify-between gap-3">
@@ -40,27 +99,38 @@ export function IssuesList({ issues }: { issues: Issue[] }) {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-1" >Original Text:</p>
-                                        <div onClick={
-                                            () => setHilightedText(audit.originalText)
-                                        } className="bg-red-50 border border-red-200 rounded p-2">
-                                            <p className="text-sm font-mono">{audit.originalText}</p>
+                                    {audit.originalText &&
+                                        <div>
+                                            <p className="text-xs font-medium text-muted-foreground mb-1" >Original Text:</p>
+                                            <div className="bg-red-50 border border-red-200 rounded p-2">
+                                                <p className="text-sm font-mono">{audit.originalText}</p>
+                                            </div>
                                         </div>
-                                    </div>
+                                    }
+
 
                                     <div>
                                         <p className="text-xs font-medium text-muted-foreground mb-1">Critique:</p>
                                         <p className="text-sm text-muted-foreground">{audit.critique}</p>
                                     </div>
-
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-1">Suggested Revision:</p>
-                                        <div className="bg-green-50 border border-green-200 rounded p-2">
-                                            <p className="text-sm font-mono">{audit.suggestedRevision}</p>
+                                    {audit.suggestedFix &&
+                                        <div className="flex flex-col gap-2">
+                                            <p className="text-xs font-medium text-muted-foreground mb-1">Suggested {audit.originalText ? "Fix" : "Revision"}:</p>
+                                            <div className="bg-green-50 border border-green-200 rounded p-2 flex items-start justify-between gap-2">
+                                                <p className="text-sm font-mono break-words">{audit.suggestedFix}</p>
+                                                {audit.originalText && (
+                                                    <Button
+                                                        disabled={fixedAudits[idx]}
+                                                        variant={fixedAudits[idx] ? "secondary" : "destructive"}
+                                                        size="sm"
+                                                        onClick={() => fixIssue(idx)}
+                                                    >
+                                                        {fixedAudits[idx] ? "Fixed" : "Apply"}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-
+                                    }
                                     <div>
                                         <p className="text-xs font-medium text-muted-foreground mb-1">Reasoning:</p>
                                         <p className="text-sm text-blue-700">{audit.reasoning}</p>
@@ -71,7 +141,8 @@ export function IssuesList({ issues }: { issues: Issue[] }) {
                     </Card>
 
                 ))
-            )}
-        </div>
+            )
+            }
+        </div >
     )
 }

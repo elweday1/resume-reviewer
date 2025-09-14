@@ -4,83 +4,15 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Loader2, AlertCircle, Share2, UserSquare } from "lucide-react"
+import { ArrowLeft, Loader2, AlertCircle, Share2 } from "lucide-react"
 import type { ResumeAnalysis } from "@/lib/schemas"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { blobAtom } from "@/lib/stores/typst"
-import { useAtomValue } from "jotai"
+import { mainContentAtom } from "@/lib/stores/typst"
+import { useAtom } from "jotai"
+import { MOCK_ANALYSIS } from "./mock"
 
-const MOCK_ANALYSIS: ResumeAnalysis = {
-  score: 85,
-  lineByLineAudit: [
-    {
-      element: "Led a team of 5 engineers to develop a new feature.",
-      reasoning: "This is a strong accomplishment that demonstrates leadership.",
-      pillar: "Completeness & Professionalism",
-      originalText: "Worked on various projects.",
-      severity: "Medium",
-      section: "Work Experience",
-      critique: "Be more specific about your role and achievements.",
-      suggestedRevision: "Led a team of 5 engineers to develop a new feature that increased user engagement by 20%.",
-    },
-    {
-      element: "Graduated with honors.",
-      section: "Education",
-      reasoning: "This is a positive highlight that should be retained.",
-      pillar: "Content Impact & Persuasion",
-      originalText: "Bachelor of Science in Computer Science, XYZ University, 2018",
-      severity: "Low",
-      critique: "Add relevant coursework or honors if applicable.",
-      suggestedRevision: "Include any relevant courses or academic achievements.",
-    },
-  ],
-  qualityPillarsAnalysis: [
-    {
-      pillar: "Strategic Alignment & Targeting",
-      score: 90,
-      description: "Measures the relevance and clarity of the resume content.",
-      findings: "Your resume content is clear and relevant to the job description.",
-    },
-    {
-      pillar: "Technical Compliance & Readability",
-      score: 80,
-      description: "Assesses the visual layout and organization of the resume.",
-      findings: "Consider using bullet points for better readability in some sections.",
-    },
-    {
-      pillar: "Technical Compliance & Readability",
-      score: 75,
-      description: "Evaluates the use of industry-specific keywords.",
-      findings: "Incorporate more keywords from the job description to pass ATS scans.",
-    },
-  ],
-  sectionAnalysis: [
-    {
-      sectionName: "Work Experience",
-      sectionScore: 80,
-      comments: "Good detail, but could use more quantifiable results."
-    },
-    {
-      sectionName: "Education",
-      sectionScore: 90,
-      comments: "Well-presented, minor additions could enhance."
-    },
-  ],
-  candidateProfile: {
-    inferredExperienceLevel: "Mid-Level",
-    inferredRole: "Software Engineer",
-    resumeLengthAnalysis: "Optimal length for your experience level.",
-  },
-  recruiterGutCheck: {
-    firstImpression: "The resume is well-structured but could benefit from more specific achievements.",
-    redFlags: [
-      "Lack of quantifiable results in work experience.",
-      "Generic statements that don't highlight unique skills.",
-    ],
-  },
-}
 
 interface UploadedFile {
   url: string
@@ -125,7 +57,8 @@ export default function AnalysisPage() {
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [shareToken, setShareToken] = useState<string | null>(null)
-  const blob = useAtomValue(blobAtom)
+
+  const [mainContent, setMainContent] = useAtom(mainContentAtom);
   const router = useRouter()
 
   useEffect(() => {
@@ -145,6 +78,8 @@ export default function AnalysisPage() {
         const isMocked = true
         const data = await getAnalysis({ file, mocked: isMocked })
         setAnalysis(data.analysis)
+        setMainContent(data.analysis.resumeTypstSource);
+
         setShareToken(data.shareToken)
 
         if (data.shareToken) {
@@ -244,7 +179,7 @@ export default function AnalysisPage() {
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
               <div className="xl:col-span-2">
                 <ErrorBoundary name="PDF Viewer">
-                  <PDFViewer file={blob!} className="sticky top-8" />
+                  <PDFViewer file={mainContent} typst={true} className="sticky top-8" />
                 </ErrorBoundary>
               </div>
 

@@ -8,7 +8,7 @@ import { ResumeAnalysis } from '@/lib/schemas'
 
 export function OverviewCard({ analysis }: { analysis: ResumeAnalysis }) {
     return (
-        <Card>
+        <Card className='col-span-2'>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Target className="w-5 h-5" />

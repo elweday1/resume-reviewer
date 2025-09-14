@@ -131,39 +131,12 @@ export function AnalysisDashboard({ analysis }: AnalysisDashboardProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-6 grid-cols-2">
       <OverviewCard analysis={analysis} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <QualityPillarsCard pillars={analysis.qualityPillarsAnalysis || []} />
-        <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} />
-      </div>
-
-      <div className="grid  gap-6">
-        <SectionPerformanceCard sections={sectionAnalysis || []} />
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2"><LucidePieChart className="w-5 h-5" /> Issues</span>
-              <div className="flex items-center gap-2">
-                {(activePillarFilter || activeSeverityFilter || activeSectionFilter) && (
-                  <Button variant="ghost" onClick={clearAllFilters}>
-                    Clear Filters
-                  </Button>
-                )}
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-3">
-              {activePillarFilter && <Badge>{activePillarFilter}</Badge>}
-              {activeSeverityFilter && <Badge className="ml-2">{activeSeverityFilter}</Badge>}
-              {activeSectionFilter && <Badge className="ml-2">{activeSectionFilter}</Badge>}
-            </div>
-            <IssuesList issues={filteredIssues} />
-          </CardContent>
-        </Card>
-      </div>
+      <QualityPillarsCard pillars={analysis.qualityPillarsAnalysis || []} />
+      <SeverityDistributionChart analysis={analysis} onSeverityClick={(s) => setActiveSeverityFilter(s)} />
+      <SectionPerformanceCard sections={sectionAnalysis || []} />
+      <IssuesList issues={filteredIssues} />
     </div>
   )
 }

@@ -23,7 +23,7 @@ export function SectionPerformanceCard({ sections }: { sections: Array<SectionAn
         }
     }), [sections])
     return (
-        <Card>
+        <Card className='col-span-2'>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />

@@ -9,8 +9,8 @@ import type { ResumeAnalysis } from "@/lib/schemas"
 import { PDFViewer } from "@/components/pdf-viewer"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { mainContentAtom } from "@/lib/stores/typst"
-import { useAtom } from "jotai"
+import { blobAtom, mainContentAtom } from "@/lib/stores/typst"
+import { useAtom, useAtomValue } from "jotai"
 import { MOCK_ANALYSIS } from "./mock"
 
 
@@ -57,7 +57,7 @@ export default function AnalysisPage() {
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [shareToken, setShareToken] = useState<string | null>(null)
-
+  const blob = useAtomValue(blobAtom);
   const [mainContent, setMainContent] = useAtom(mainContentAtom);
   const router = useRouter()
 
@@ -179,7 +179,7 @@ export default function AnalysisPage() {
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
               <div className="xl:col-span-2">
                 <ErrorBoundary name="PDF Viewer">
-                  <PDFViewer file={mainContent} typst={true} className="sticky top-8" />
+                  <PDFViewer blob={blob} className="sticky top-8" />
                 </ErrorBoundary>
               </div>
 

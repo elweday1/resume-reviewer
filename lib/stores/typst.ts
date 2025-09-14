@@ -4,7 +4,13 @@ import "@myriaddreamin/typst-ts-web-compiler"
 
 export const mainContentAtom = atom(
     "",
-    (_, set, newValue: string) => {
+    async (_, set, newValue: string) => {
+        const newBlob = await generatePDFBlob(newValue);
+        if (!newBlob) {
+            console.warn("Failed to render the new blob (:")
+            return;
+        }
+        set(blobAtom, newBlob);
         set(mainContentAtom, newValue);
     });
 
@@ -19,11 +25,17 @@ $typst.setRendererInitOptions({
 });
 
 
-export async function generatePDFBlob(mainContent: string): Promise<Blob | null> {
-    const uint8 = await $typst.pdf({ mainContent })
-    if (!uint8) {
-        return null;
+export const blobAtom = atom<Blob | null>(null);
+
+export async function generatePDFBlob(mainContent: string): Promise<Blob | undefined> {
+    try {
+        const uint8 = await $typst.pdf({ mainContent })
+        if (!uint8) {
+            return;
+        }
+        const buffer = uint8.buffer instanceof ArrayBuffer ? uint8.buffer : uint8.slice().buffer
+        return new Blob([buffer], { type: 'application/pdf' })
+    } catch (e) {
+        return;
     }
-    const buffer = uint8.buffer instanceof ArrayBuffer ? uint8.buffer : uint8.slice().buffer
-    return new Blob([buffer], { type: 'application/pdf' })
 }

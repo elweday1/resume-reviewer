@@ -4,12 +4,21 @@ import { google } from "@ai-sdk/google"
 import { ANALYSIS_SYSTEM_PROMPT, ResumeAnalysisSchema, type ResumeAnalysis } from "@/lib/schemas"
 import { createClient } from "@/lib/supabase/server"
 import crypto from 'crypto'
+const MODEL_NAME = "gemini-2.5-flash"
+import path from "path"
+import { readFile } from "fs/promises"
 
-const MODEL_NAME = "gemini-2.0-flash"
-
+async function readTtypstDocs() {
+  const typstPath = path.resolve(process.cwd(), 'app', 'typst.pdf')
+  const typstBuffer = await readFile(typstPath)
+  return Buffer.from(typstBuffer as any).toString('base64')
+}
 
 async function analyzeFile(fileName: string, pdfBase64: string): Promise<ResumeAnalysis> {
+  const typstBase64 = await readTtypstDocs();
+
   const { object } = await generateObject({
+    maxRetries: 3,
     model: google(MODEL_NAME),
     messages: [
       {
@@ -27,7 +36,15 @@ async function analyzeFile(fileName: string, pdfBase64: string): Promise<ResumeA
             type: "file",
             data: pdfBase64,
             mediaType: "application/pdf",
+            filename: fileName,
           },
+          {
+            type: "file",
+            data: typstBase64,
+            mediaType: "application/pdf",
+            filename: "typst-docs.pdf"
+          },
+
         ],
       },
     ],

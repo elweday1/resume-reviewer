@@ -8,7 +8,7 @@ import { useMemo } from 'react'
 import { SEVERITY_DATA } from '@/lib/utils'
 import { SeverityLevels, SectionAnalysis, Issue } from '@/lib/schemas'
 
-export function SectionPerformanceCard({ sections }: { sections: Array<SectionAnalysis & { lineByLineAudit: Issue[] }> }) {
+export function SectionPerformanceChart({ sections }: { sections: Array<SectionAnalysis & { lineByLineAudit: Issue[] }> }) {
     const setSeverity = useFilterStore((s) => s.setSeverity)
     const setSection = useFilterStore((s) => s.setSection)
     const data = useMemo(() => sections.map((s) => {

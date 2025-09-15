@@ -114,7 +114,7 @@ export function IssuesList({ issues }: { issues: Issue[] }) {
                                     {audit.originalText &&
                                         <div>
                                             <p className="text-xs font-medium text-muted-foreground mb-1" >Original Text:</p>
-                                            <div className="bg-red-50 border border-red-200 rounded p-2">
+                                            <div className="border-muted-background border rounded p-2">
                                                 <p className="text-sm font-mono">{audit.originalText}</p>
                                             </div>
                                         </div>
@@ -128,7 +128,7 @@ export function IssuesList({ issues }: { issues: Issue[] }) {
                                     {audit.suggestedFix &&
                                         <div className="flex flex-col gap-2">
                                             <p className="text-xs font-medium text-muted-foreground mb-1">Suggested {audit.originalText ? "Fix" : "Revision"}:</p>
-                                            <div className="bg-green-50 border border-green-200 rounded p-2 flex items-start justify-between gap-2">
+                                            <div className="border rounded p-2 flex items-start justify-between gap-2">
                                                 <p className="text-sm font-mono break-words">{audit.suggestedFix}</p>
                                                 {audit.originalText && (
                                                     <Button

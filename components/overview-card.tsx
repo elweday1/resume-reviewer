@@ -53,14 +53,14 @@ export function OverviewCard({ analysis }: { analysis: ResumeAnalysis }) {
                     {analysis.recruiterGutCheck && (
                         <div className="w-full text-left mt-2 space-y-3">
                             <h4 className="text-sm font-medium">Recruiter's First Impression</h4>
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                            <div className="border rounded-lg p-3">
                                 <p className="text-sm">{analysis.recruiterGutCheck.firstImpression || 'No impression available'}</p>
                             </div>
 
                             {analysis.recruiterGutCheck.redFlags && analysis.recruiterGutCheck.redFlags.length > 0 && (
                                 <div>
                                     <h5 className="text-sm font-medium text-red-600">Red Flags</h5>
-                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
+                                    <div className="border rounded-lg p-3 space-y-2">
                                         {Array.isArray(analysis.recruiterGutCheck.redFlags) ? (
                                             analysis.recruiterGutCheck.redFlags.map((flag: string, index: number) => (
                                                 <p key={index} className="text-sm text-red-700">• {flag}</p>

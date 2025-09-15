@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/error-boundary"
 import { blobAtom, mainContentAtom } from "@/lib/stores/typst"
 import { useAtom, useAtomValue } from "jotai"
 import { MOCK_ANALYSIS } from "./mock"
+import { ModeToggle } from "@/components/theme-switcher"
 
 
 interface UploadedFile {
@@ -148,6 +149,7 @@ export default function AnalysisPage() {
                 Share Results
               </Button>
             )}
+            <ModeToggle />
           </div>
 
           {error && (

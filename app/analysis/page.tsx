@@ -76,7 +76,7 @@ export default function AnalysisPage() {
 
       try {
         console.log("[v0] Starting PDF analysis with Gemini...")
-        const isMocked = true
+        const isMocked = false
         const data = await getAnalysis({ file, mocked: isMocked })
         setAnalysis(data.analysis)
         setMainContent(data.analysis.resumeTypstSource);
